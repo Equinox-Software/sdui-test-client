@@ -1,7 +1,6 @@
 package nyx.sdui
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,7 +25,9 @@ class MainActivity : ComponentActivity() {
             SduiTheme {
                 // A surface container using the 'background' color from the theme
                 Column(
-                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colors.background)
                 ) {
                     Greeting("Android")
 
@@ -44,18 +44,20 @@ fun Greeting(name: String) {
 }
 
 
-
 @OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun Test() {
     val responses = listOf(
         Json.encodeToString(LayoutResponse(LayoutType.TEXT, "Some text goes here")),
-        Json.encodeToString(LayoutResponse(LayoutType.BUTTON, "Click me (fix this part lel)",/*{
+        Json.encodeToString(
+            LayoutResponse(
+                LayoutType.BUTTON, "Click me (fix this part lel)",/*{
             Log.i(
                 "TAG",
                 "----"
             )
-        }*/)
+        }*/
+            )
         )
     )
 
@@ -68,7 +70,7 @@ fun Test() {
             }
 
             LayoutType.BUTTON -> {
-                Button({  }) {
+                Button({ }) {
                     Text(obj.data.toString())
                 }
             }

@@ -8,7 +8,7 @@ object Repository {
 
     private val client = ktorHttpClient
 
-    val END_POINT_GET_USER_KTOR =""
+    val END_POINT_GET_USER_KTOR = ""
     val END_POINT_POST_USER_KTOR = ""
 
     suspend fun getUserKtor(
