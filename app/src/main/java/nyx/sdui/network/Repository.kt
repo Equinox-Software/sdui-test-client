@@ -1,8 +1,7 @@
 package nyx.sdui.network
 
 import io.ktor.client.request.*
-import nyx.sdui.model.LayoutResponse
-import nyx.sdui.model.UserEntity
+import nyx.sdui.model.*
 
 object Repository {
 
@@ -21,5 +20,62 @@ object Repository {
         }
     }
 
+    suspend fun getContent(): Component.Layout  = /*TopLayoutResponse("1672222", listOf(
+    LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
+    LayoutResponse("12",
+    LayoutType.BUTTON, "Click me (fix this part lel)",/*{
+            Log.i(
+                "TAG",
+                "----"
+            )
+        }*/
+    )))*/
+
+   // client.get("cont")
+
+        Component.Layout(
+            "abc",
+            LayoutType.SCROLL_VERTICAL,
+            listOf(
+                Component.Widget("aa", WidgetType.TEXT, "Hello!"),
+                Component.Layout(
+                    "bb", LayoutType.BOX,
+                    listOf(
+                        Component.Widget("ab", WidgetType.TEXT, "Heüüüüüülooolo!"),
+                        Component.Widget("ba", WidgetType.TEXT, "Hellppo!")
+                    )
+                ),
+               Component.Widget(
+                    "122", WidgetType.BUTTON,
+                    "click!!"
+                )
+            )
+        )
+
+    //make this appear
+    suspend fun performClick(id:String): Component.Layout =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
+        LayoutResponse("1283", LayoutType.TEXT, "ID: $id"),
+        LayoutResponse("12",
+            LayoutType.BUTTON, "Click me (fix this part lel)",/*{
+            Log.i(
+                "TAG",
+                "----"
+            )
+        }*/
+        ), LayoutResponse("182",LayoutType.TEXT,"yeee")))*/
+
+        Component.Layout(
+            "abc",
+            LayoutType.SCROLL_VERTICAL,
+            listOf(
+                Component.Widget("ab", WidgetType.IMAGE, "https://cdn.wallpapersafari.com/46/29/MTLnRp.jpg"),
+                Component.Widget("ba", WidgetType.TEXT, "Helltthppo!")
+            )
+
+
+        )
+
+
+      //  client.get("click${id}")
 
 }

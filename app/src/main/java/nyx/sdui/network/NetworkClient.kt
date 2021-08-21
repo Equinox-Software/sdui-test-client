@@ -26,6 +26,13 @@ val ktorHttpClient = HttpClient(Android) {
             connectTimeout = TIME_OUT
             socketTimeout = TIME_OUT
         }
+
+        defaultRequest {
+            host = "https://pxnx-rw.ddns.net:9090"
+            url {
+                protocol = URLProtocol.HTTPS
+            }
+        }
     }
 
     install(Logging) {
