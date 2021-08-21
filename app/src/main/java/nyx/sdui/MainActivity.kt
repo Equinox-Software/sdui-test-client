@@ -6,9 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -19,14 +17,10 @@ import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
-import coil.request.ImageRequest
-import com.google.accompanist.coil.rememberCoilPainter
-import com.google.accompanist.imageloading.LoadPainterDefaults
-import kotlinx.serialization.ExperimentalSerializationApi
+import coil.transform.CircleCropTransformation
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.model.Component
-import nyx.sdui.model.LayoutType
-import nyx.sdui.model.WidgetType
+import nyx.sdui.model.ComponentType
 import nyx.sdui.screens.LoadingScreen
 import nyx.sdui.ui.theme.SduiTheme
 
@@ -48,7 +42,7 @@ class MainActivity : ComponentActivity() {
 
                     is Status.Success -> {
                         Log.w(TAG, "Success")
-                        Content(result.data as Component.Layout)
+                        ResolveComponent(result.data as Component)
                     }
 
                     is Status.Failure -> {
@@ -72,89 +66,85 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
-    @OptIn(ExperimentalSerializationApi::class)
-    @Composable
-    fun Content(response: Component.Layout) {
-
-
-        ResolveLayout(response.children)
-
-
-    }
-
-
     @OptIn(ExperimentalCoilApi::class)
     @Composable
-    fun ResolveLayout(components: List<Component>) {
+    fun ResolveComponent(component: Component) {
 
 
-        for (component in components) {
-
-            Log.d(TAG, "-- ${component.id} --")
-
-            when (component) {
-
-                is Component.Layout -> {
-                    when (component.type) {
-                        LayoutType.BOX -> {
-                            Box {
-                                ResolveLayout(component.children)
-                            }
-                        }
-
-                        LayoutType.SCROLL_VERTICAL -> {
-                            Column(
-                                Modifier.padding(
-                                    16.dp
-                                )
-                            ) {
-                                 ResolveLayout(component.children)
-
-
-                            }
-                        }
-
+        when (component.type) {
+            ComponentType.BOX -> {
+                Box {
+                    for (child in component.children!!) {
+                        ResolveComponent(child)
                     }
+
                 }
+            }
 
-                is Component.Widget -> {
-                    when (component.type) {
-                        WidgetType.TEXT -> {
-                            Text(component.data)
-                        }
+            ComponentType.VERTICAL -> {
+                Column(
+                    Modifier.padding(
+                        16.dp
+                    )
+                ) {
 
-                        WidgetType.BUTTON -> {
-                            Button({
 
-                                viewModel.performClick(component.id)
-                            },Modifier.padding(top=40.dp)) {
-                                Text(component.data)
-                            }
-                        }
+                    for (child in component.children!!) {
+                        ResolveComponent(child)
+                    }
 
-                        WidgetType.IMAGE -> {
-                            Image(painter = rememberImagePainter(
-                                data = component.data,
-                                imageLoader = LocalImageLoader.current,
-                                builder = {
-                                    placeholder(R.drawable.ic_launcher_background)
-                                }
-                            ), contentDescription ="ef" )
+
+                }
+            }
+
+
+            ComponentType.SCROLL_VERTICAL -> {
+                LazyColumn(
+                    Modifier.padding(
+                        16.dp
+                    )
+                ) {
+
+
+                    for (child in component.children!!) {
+                        item {
+                            ResolveComponent(child)
                         }
                     }
                 }
 
 
             }
+
+
+            ComponentType.TEXT -> {
+                Text(component.data!!)
+            }
+
+            ComponentType.IMAGE -> {
+                Image(painter = rememberImagePainter(
+                    data = component.data,
+                    imageLoader = LocalImageLoader.current, builder = {
+                        crossfade(true)
+                        placeholder(R.mipmap.ic_launcher_round)
+                        transformations(CircleCropTransformation())
+                    }
+                ), contentDescription = null,
+                    Modifier
+                        .fillMaxWidth()
+                        .height(100.dp))
+            }
+
+            ComponentType.BUTTON -> {
+                Button({
+
+                    viewModel.performClick(component.id)
+                }, Modifier.padding(top = 40.dp)) {
+                    Text(component.data!!)
+                }
+            }
+
+
         }
-
-
     }
-
-
 }
-
-
-
-

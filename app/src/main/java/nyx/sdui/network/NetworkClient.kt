@@ -11,9 +11,22 @@ import io.ktor.client.features.observer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-private const val TIME_OUT = 60_000
+private const val TIME_OUT = 15_000 // was 60000
 
 val ktorHttpClient = HttpClient(Android) {
+
+    defaultRequest {
+        host = "rw-ktor-server.herokuapp.com"
+        url {
+            protocol = URLProtocol.HTTPS
+        }
+    }
+
+
+    engine {
+        connectTimeout = TIME_OUT
+        socketTimeout = TIME_OUT
+    }
 
     install(JsonFeature) {
         serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
@@ -22,17 +35,7 @@ val ktorHttpClient = HttpClient(Android) {
             ignoreUnknownKeys = true
         })
 
-        engine {
-            connectTimeout = TIME_OUT
-            socketTimeout = TIME_OUT
-        }
 
-        defaultRequest {
-            host = "https://pxnx-rw.ddns.net:9090"
-            url {
-                protocol = URLProtocol.HTTPS
-            }
-        }
     }
 
     install(Logging) {

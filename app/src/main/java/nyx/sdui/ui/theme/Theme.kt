@@ -33,7 +33,7 @@ fun SduiTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
         DarkColorPalette
     } else {*/
         LightColorPalette
-  //  }
+    //  }
 
     MaterialTheme(
         colors = colors,

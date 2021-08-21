@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import nyx.sdui.Status
 import nyx.sdui.network.Repository
 
 class MainViewModel : ViewModel() {
@@ -23,7 +22,7 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 result.value = Status.Loading()
-                delay(3000L)
+                delay(1000L)
                 result.value = Status.Success(Repository.getContent())
             } catch (e: Exception) {
                 Log.e(TAG, e.message!!)
@@ -32,7 +31,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun performClick(id:String){
+    fun performClick(id: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 result.value = Status.Loading()
