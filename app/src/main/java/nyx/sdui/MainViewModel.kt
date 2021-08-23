@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import nyx.sdui.network.Repository
@@ -20,9 +19,8 @@ class MainViewModel : ViewModel() {
 
     private fun fetchContent() {
         viewModelScope.launch(Dispatchers.IO) {
+            result.value = Status.Loading()
             try {
-                result.value = Status.Loading()
-                delay(1000L)
                 result.value = Status.Success(Repository.getContent())
             } catch (e: Exception) {
                 Log.e(TAG, e.message!!)
@@ -33,9 +31,8 @@ class MainViewModel : ViewModel() {
 
     fun performClick(id: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            result.value = Status.Loading()
             try {
-                result.value = Status.Loading()
-                delay(3000L)
                 result.value = Status.Success(Repository.performClick(id))
             } catch (e: Exception) {
                 Log.e(TAG, e.message!!)

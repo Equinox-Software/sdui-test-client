@@ -70,6 +70,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun ResolveComponent(component: Component) {
 
+        /*
+        What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
+         */
 
         when (component.type) {
             ComponentType.BOX -> {

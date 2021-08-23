@@ -9,5 +9,3 @@ data class Component(
     val data: String? = null,
     val children: List<Component>? = null
 )
-
-
