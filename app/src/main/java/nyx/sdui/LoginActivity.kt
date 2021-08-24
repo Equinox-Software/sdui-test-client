@@ -2,6 +2,7 @@ package nyx.sdui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -9,12 +10,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import io.ktor.client.call.*
+import io.ktor.client.features.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import nyx.sdui.network.ktorHttpClient
 import nyx.sdui.ui.theme.SduiTheme
 
@@ -74,13 +82,10 @@ class LoginActivity : ComponentActivity() {
                         val scope = rememberCoroutineScope()
 
 
-                        scope.launch {
-
-                            val client = ktorHttpClient
-
-                            //    client.post("login")
+                      //might launch it here already?
+                        var textt by remember{
+                            mutableStateOf("--- OUTPUT ---")
                         }
-
 
 
                         Row(
@@ -107,11 +112,41 @@ class LoginActivity : ComponentActivity() {
                                 .clip(RoundedCornerShape(16.dp))
                                 .clickable {
 
+                                    scope.launch {
+
+                                        val client = ktorHttpClient
+
+
+
+                                      val token =      client.post<Map<String,String>>("/login"){
+                                            contentType(ContentType.Application.Json)
+                                            body= User("fhuuu","1234")
+                                        }["token"]
+
+                                        Log.d(TAG, "-------------afef\n\n TOKEN::: $token")
+
+                                        textt += "\n\nPOSTED >> TOKEN: $token"
+
+
+                                     val ss =   client.get<String>("/hello") {
+                                         header(HttpHeaders.Authorization, "Bearer $token")
+                                     }
+
+                                      Log.d(TAG, "_----------------\n\nSTRING $ss")
+
+                                        textt += "\n\nAUTHORIZED >> RESPONSE: $ss"
+
+
+
+                                    }
+
                                 }
                                 .padding(10.dp)) {
-                            Text("Stable")
+                            Text("Stable -- POST")
 
                         }
+
+                        Text(textt)
 
                     }
                 }
@@ -121,4 +156,5 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
-
+@Serializable
+data class User(val username: String, val password: String)
