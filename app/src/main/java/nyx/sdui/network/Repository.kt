@@ -55,7 +55,7 @@ object Repository {
 
 
     //make this appear
-    suspend fun performClick(id: String, data: Map<String, Any>?): Component =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
+    suspend fun performClick(id: String, data: Map<String, String>?): Component =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
         LayoutResponse("1283", LayoutType.TEXT, "ID: $id"),
         LayoutResponse("12",
             LayoutType.BUTTON, "Click me (fix this part lel)",/*{
@@ -81,7 +81,7 @@ object Repository {
 
         client.post("click${id}") {
             for(i in data?.values!!){
-                Log.e("REPO", i.toString())
+                Log.e("REPO", i)
             }
 
 

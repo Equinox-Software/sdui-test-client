@@ -14,7 +14,7 @@ class MainViewModel : ViewModel() {
     private val TAG = "MainViewModel"
     val result = MutableStateFlow<Status<Any>>(Status.Loading())
 
-    val data = mutableStateMapOf<String, Any>()
+    val data = mutableStateMapOf<String, String>()
 
     init {
         fetchContent()
