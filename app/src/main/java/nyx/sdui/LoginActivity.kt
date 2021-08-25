@@ -15,12 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import io.ktor.client.call.*
-import io.ktor.client.features.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import nyx.sdui.network.ktorHttpClient
@@ -82,8 +78,8 @@ class LoginActivity : ComponentActivity() {
                         val scope = rememberCoroutineScope()
 
 
-                      //might launch it here already?
-                        var textt by remember{
+                        //might launch it here already?
+                        var textt by remember {
                             mutableStateOf("--- OUTPUT ---")
                         }
 
@@ -117,10 +113,9 @@ class LoginActivity : ComponentActivity() {
                                         val client = ktorHttpClient
 
 
-
-                                      val token =      client.post<Map<String,String>>("/login"){
+                                        val token = client.post<Map<String, String>>("/login") {
                                             contentType(ContentType.Application.Json)
-                                            body= User("fhuuu","1234")
+                                            body = User("fhuuu", "1234")
                                         }["token"]
 
                                         Log.d(TAG, "-------------afef\n\n TOKEN::: $token")
@@ -128,14 +123,13 @@ class LoginActivity : ComponentActivity() {
                                         textt += "\n\nPOSTED >> TOKEN: $token"
 
 
-                                     val ss =   client.get<String>("/hello") {
-                                         header(HttpHeaders.Authorization, "Bearer $token")
-                                     }
+                                        val ss = client.get<String>("/hello") {
+                                            header(HttpHeaders.Authorization, "Bearer $token")
+                                        }
 
-                                      Log.d(TAG, "_----------------\n\nSTRING $ss")
+                                        Log.d(TAG, "_----------------\n\nSTRING $ss")
 
                                         textt += "\n\nAUTHORIZED >> RESPONSE: $ss"
-
 
 
                                     }
