@@ -1,6 +1,8 @@
 package nyx.sdui.network
 
+import android.util.Log
 import io.ktor.client.request.*
+import io.ktor.http.*
 import nyx.sdui.model.Component
 import nyx.sdui.model.UserEntity
 
@@ -53,7 +55,7 @@ object Repository {
 
 
     //make this appear
-    suspend fun performClick(id: String, data: Map<String, Any>): Component =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
+    suspend fun performClick(id: String, data: Map<String, Any>?): Component =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
         LayoutResponse("1283", LayoutType.TEXT, "ID: $id"),
         LayoutResponse("12",
             LayoutType.BUTTON, "Click me (fix this part lel)",/*{
@@ -76,8 +78,22 @@ object Repository {
             )
     */
 
-        client.get("click${id}") {
-            body = data
+
+        client.post("click${id}") {
+            for(i in data?.values!!){
+                Log.e("REPO", i.toString())
+            }
+
+
+            Log.e("REPO", "DATA -- $data")
+
+            Log.e("REPO", "DATA - ID -- ${data[id]}")
+
+            Log.e("REPO", "DATA - ID -- ${data["abTuT"]}")
+
+            contentType(ContentType.Application.Json)
+                body = data
+
         }
 
 }
