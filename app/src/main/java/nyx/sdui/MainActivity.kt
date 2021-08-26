@@ -103,16 +103,13 @@ class MainActivity : ComponentActivity() {
 
 
             ComponentType.EDIT_TEXT -> {
-
-                val texx by remember{
-                    mutableStateOf(TextFieldValue(viewModel.data[component.id].toString()))
-
-                }
+                var text by remember { mutableStateOf(TextFieldValue()) }
 
                 TextField(
-                    value = texx,
+                    value = text,
                     onValueChange = {
                         viewModel.data[component.id] = it.text
+                        text = it
                     })
             }
 
