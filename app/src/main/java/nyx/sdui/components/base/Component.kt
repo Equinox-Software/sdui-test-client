@@ -1,4 +1,4 @@
-package nyx.sdui.model
+package nyx.sdui.components.base
 
 import kotlinx.serialization.Serializable
 

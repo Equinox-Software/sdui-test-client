@@ -4,7 +4,7 @@ import android.util.Log
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
-import nyx.sdui.model.Component
+import nyx.sdui.components.base.Component
 import nyx.sdui.model.UserEntity
 
 object Repository {

@@ -2,6 +2,7 @@ package nyx.sdui
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
+import nyx.sdui.Status.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -12,34 +13,32 @@ import nyx.sdui.network.Repository
 class MainViewModel : ViewModel() {
 
     private val TAG = "MainViewModel"
-    val result = MutableStateFlow<Status<Any>>(Status.Loading())
+    val result = MutableStateFlow<Status<Any>>(Loading())
 
     val data = mutableStateMapOf<String, String>()
 
-    init {
-        fetchContent()
-    }
+    init { fetchContent() }
 
     private fun fetchContent() {
         viewModelScope.launch(Dispatchers.IO) {
-            result.value = Status.Loading()
+            result.value = Loading()
             try {
-                result.value = Status.Success(Repository.getContent())
+                result.value = Success(Repository.getContent())
             } catch (e: Exception) {
                 Log.e(TAG, e.message!!)
-                result.value = Status.Failure(e)
+                result.value = Failure(e)
             }
         }
     }
 
     fun performClick(id: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            result.value = Status.Loading()
+            result.value = Loading()
             try {
-                result.value = Status.Success(Repository.performClick(id, data))
+                result.value = Success(Repository.performClick(id, data))
             } catch (e: Exception) {
                 Log.e(TAG, e.message!!)
-                result.value = Status.Failure(e)
+                result.value = Failure(e)
             }
         }
     }
