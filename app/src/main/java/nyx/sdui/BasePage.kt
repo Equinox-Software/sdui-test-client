@@ -1,11 +1,6 @@
 package nyx.sdui
 
 import android.annotation.SuppressLint
-import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,56 +18,11 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import nyx.felix.screens.ErrorScreen
-import nyx.sdui.Status.*
 import nyx.sdui.components.base.Component
-import nyx.sdui.components.base.ComponentAction
-import nyx.sdui.components.base.ComponentActionType
-import nyx.sdui.components.base.ComponentType.*
-import nyx.sdui.screens.LoadingScreen
-import nyx.sdui.ui.theme.SduiTheme
+import nyx.sdui.components.base.ComponentType
 
-
-class MainActivity : ComponentActivity() {
-
-    private val viewModel: MainViewModel by viewModels()
-    private val TAG = "MainActivity"
-
-    @OptIn(DelicateCoroutinesApi::class)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            SduiTheme {
-                when (val result = viewModel.result.collectAsState().value) {
-                    is Loading -> {
-                        Log.w(TAG, "Loading")
-                        LoadingScreen()
-                    }
-
-                    is Success -> {
-                        Log.w(TAG, "Success")
-                        ResolveComponent(result.data as Component)
-                    }
-
-                    is Failure -> {
-                        val e = result.exception as Exception
-
-                        Log.e(
-                            TAG,
-                            "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
-                                Log.getStackTraceString(e)
-                            }"
-                        )
-
-                        ErrorScreen("Loading $TAG failed.", e.message!!)
-                    }
-                }
-            }
-        }
-    }
+interface BasePage {
 
     @OptIn(ExperimentalCoilApi::class)
     @Composable
@@ -81,33 +31,18 @@ class MainActivity : ComponentActivity() {
         //TODO What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
         when (component.type) {
             //layouts
-            BOX -> box(component.children!!)
-            VERTICAL -> column(component.children!!)
-            SCROLL_VERTICAL -> lazyColumn(component.children!!)
-            SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
-            SELECTABLE_ROW -> selectableRow(component.data!!)
+            ComponentType.BOX -> box(component.children!!)
+            ComponentType.VERTICAL -> column(component.children!!)
+            ComponentType.SCROLL_VERTICAL -> lazyColumn(component.children!!)
+            ComponentType.SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
+            ComponentType.SELECTABLE_ROW -> selectableRow(component.data!!)
 
             //widgets
-            EDIT_TEXT -> textField(component.id, component.data!!["defaultText"].toString())
-            TEXT -> text(component.data!!["text"].toString())
-            IMAGE -> image(component.data!!["url"].toString())
-      //      BUTTON -> textButton(component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK])
-            DIVIDER -> divider()
-        }
-    }
-
-    @Composable
-    fun ResolveAction(actionType: ComponentActionType, action:Any) {
-
-        when (actionType) {
-            ComponentActionType.CLICK -> {
-when(action){
-    ComponentAction.OPEN_PAGE ->{}
-}
-            }
-            ComponentActionType.SELECT ->{
-
-            }
+            ComponentType.EDIT_TEXT -> textField(component.id, component.data!!["defaultText"].toString())
+            ComponentType.TEXT -> text(component.data!!["text"].toString())
+            ComponentType.IMAGE -> image(component.data!!["url"].toString())
+            //      BUTTON -> textButton(component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK])
+            ComponentType.DIVIDER -> divider()
         }
     }
 
@@ -122,7 +57,7 @@ when(action){
         TextField(
             value = text,
             onValueChange = {
-                viewModel.data[id] = it.text
+            //    viewModel.data[id] = it.text
                 text = it
             })
     }
@@ -144,9 +79,9 @@ when(action){
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textButton(text: String, action:JsonElement) =
+    fun textButton(text: String, action: JsonElement) =
         Button({
-             //  resolveAction()
+            //  resolveAction()
         }, Modifier.padding(top = 40.dp)) {
             Text(text)
         }
@@ -228,17 +163,4 @@ when(action){
     @SuppressLint("ComposableNaming")
     @Composable
     fun divider() = Divider(Modifier.fillMaxWidth())
-
-
-
-
-
-
-
-
-
-
 }
-
-
-
