@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
             EDIT_TEXT -> textField(component.id, component.data!!["defaultText"].toString())
             TEXT -> text(component.data!!["text"].toString())
             IMAGE -> image(component.data!!["url"].toString())
-      //      BUTTON -> textButton(component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK])
+          BUTTON -> textButton(component.id,component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK]!!)
             DIVIDER -> divider()
         }
     }
@@ -144,8 +144,9 @@ when(action){
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textButton(text: String, action:JsonElement) =
+    fun textButton(id:String,text: String, action:JsonElement) =
         Button({
+               viewModel.performClick(id)
              //  resolveAction()
         }, Modifier.padding(top = 40.dp)) {
             Text(text)
