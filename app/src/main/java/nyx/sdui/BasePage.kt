@@ -35,12 +35,12 @@ interface BasePage {
             ComponentType.VERTICAL -> column(component.children!!)
             ComponentType.SCROLL_VERTICAL -> lazyColumn(component.children!!)
             ComponentType.SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
-            ComponentType.SELECTABLE_ROW -> selectableRow(component.data!!)
+            ComponentType.SELECTABLE_ROW -> selectableRow(component.data!! as Map<String, JsonElement>)
 
             //widgets
-            ComponentType.EDIT_TEXT -> textField(component.id, component.data!!["defaultText"].toString())
-            ComponentType.TEXT -> text(component.data!!["text"].toString())
-            ComponentType.IMAGE -> image(component.data!!["url"].toString())
+            ComponentType.EDIT_TEXT -> textField(component.id, component.data!!as String)
+            ComponentType.TEXT -> text(component.data!! as String)
+            ComponentType.IMAGE -> image(component.data!!as String)
             //      BUTTON -> textButton(component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK])
             ComponentType.DIVIDER -> divider()
         }
@@ -109,7 +109,7 @@ interface BasePage {
     fun selectableLazyColumn(children: List<Component>) = LazyColumn(Modifier.padding(16.dp)) {
         for (child in children) {
             item {
-                selectableRow(child.data!!)
+                selectableRow(child.data!! as  Map<String, JsonElement>)
                 divider()
             }
         }

@@ -2,7 +2,7 @@ package nyx.sdui.network
 
 import android.util.Log
 import io.ktor.client.*
-import io.ktor.client.engine.android.*
+import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
@@ -11,9 +11,7 @@ import io.ktor.client.features.observer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-private const val TIME_OUT = 15_000 // was 60000
-
-val ktorHttpClient = HttpClient(Android) {
+val ktorHttpClient = HttpClient(CIO) {
 
     defaultRequest {
         host = "rw-ktor-server.herokuapp.com"
@@ -22,20 +20,12 @@ val ktorHttpClient = HttpClient(Android) {
         }
     }
 
-
-    engine {
-        connectTimeout = TIME_OUT
-        socketTimeout = TIME_OUT
-    }
-
     install(JsonFeature) {
         serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
             prettyPrint = true
-            isLenient = true
+         //   isLenient = true
             ignoreUnknownKeys = true
         })
-
-
     }
 
     install(Logging) {

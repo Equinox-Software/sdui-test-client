@@ -81,9 +81,9 @@ class Page(private val name:String) {
             ComponentType.SELECTABLE_ROW -> selectableRow(component.data!!)
 
             //widgets
-            ComponentType.EDIT_TEXT -> textField(component.id, component.data!!["defaultText"].toString())
-            ComponentType.TEXT -> text(component.data!!["text"].toString())
-            ComponentType.IMAGE -> image(component.data!!["url"].toString())
+            ComponentType.EDIT_TEXT -> textField(component.id, component.data!!)
+            ComponentType.TEXT -> text(component.data!!)
+            ComponentType.IMAGE -> image(component.data!!)
             //      BUTTON -> textButton(component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK])
             ComponentType.DIVIDER -> divider()
         }
@@ -160,7 +160,7 @@ class Page(private val name:String) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun selectableRow(data: Map<String, JsonElement>) {
+    fun selectableRow(data: String) {
         var selected by remember {
             mutableStateOf(false)
         }
@@ -174,7 +174,7 @@ class Page(private val name:String) {
             if(selected){
                 text("SELECTED")
             }else{
-                text(text = data["Text"].toString())
+                text(text = data)
             }
 
         }

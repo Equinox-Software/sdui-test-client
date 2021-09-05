@@ -24,7 +24,6 @@ import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.Status.*
@@ -85,27 +84,32 @@ class MainActivity : ComponentActivity() {
             VERTICAL -> column(component.children!!)
             SCROLL_VERTICAL -> lazyColumn(component.children!!)
             SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
-            SELECTABLE_ROW -> selectableRow(component.data!!)
+            SELECTABLE_ROW -> selectableRow(component.data!! as Map<String,String>)
 
             //widgets
-            EDIT_TEXT -> textField(component.id, component.data!!["defaultText"].toString())
-            TEXT -> text(component.data!!["text"].toString())
-            IMAGE -> image(component.data!!["url"].toString())
-          BUTTON -> textButton(component.id,component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK]!!)
+            EDIT_TEXT -> textField(component.id, component.data!!.toString())
+            TEXT -> text(component.data!!.toString())
+            IMAGE -> image(component.data!!.toString())
+            BUTTON -> textButton(
+                component.id,
+                component.data!!.toString(),
+                component.actions!![ComponentActionType.CLICK]!!
+            )
             DIVIDER -> divider()
         }
     }
 
     @Composable
-    fun ResolveAction(actionType: ComponentActionType, action:Any) {
+    fun ResolveAction(actionType: ComponentActionType, action: Any) {
 
         when (actionType) {
             ComponentActionType.CLICK -> {
-when(action){
-    ComponentAction.OPEN_PAGE ->{}
-}
+                when (action) {
+                    ComponentAction.OPEN_PAGE -> {
+                    }
+                }
             }
-            ComponentActionType.SELECT ->{
+            ComponentActionType.SELECT -> {
 
             }
         }
@@ -144,10 +148,10 @@ when(action){
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textButton(id:String,text: String, action:JsonElement) =
+    fun textButton(id: String, text: String, action: JsonElement) =
         Button({
-               viewModel.performClick(id)
-             //  resolveAction()
+            viewModel.performClick(id)
+            //  resolveAction()
         }, Modifier.padding(top = 40.dp)) {
             Text(text)
         }
@@ -157,6 +161,10 @@ when(action){
     fun column(children: List<Component>) = Column(Modifier.padding(16.dp)) {
         for (child in children) {
             ResolveComponent(child)
+
+            var amir by remember {
+                mutableStateOf("lavat")
+            }
         }
     }
 
@@ -175,7 +183,7 @@ when(action){
     fun selectableLazyColumn(children: List<Component>) = LazyColumn(Modifier.padding(16.dp)) {
         for (child in children) {
             item {
-                selectableRow(child.data!!)
+                selectableRow(child.data!! as Map<String,String>)
                 divider()
             }
         }
@@ -183,17 +191,20 @@ when(action){
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun selectableRow(data: Map<String, JsonElement>) {
+    fun selectableRow(data: Map<String, String>) {
         var selected by remember {
             mutableStateOf(false)
         }
 
-        Row(Modifier.padding(10.dp).selectable(selected) {
-            selected = !selected
-        }) {
-            if(selected){
+        Row(
+            Modifier
+                .padding(10.dp)
+                .selectable(selected) {
+                    selected = !selected
+                }) {
+            if (selected) {
                 text("SELECTED")
-            }else{
+            } else {
                 text(text = data["Text"].toString())
             }
 
@@ -229,14 +240,6 @@ when(action){
     @SuppressLint("ComposableNaming")
     @Composable
     fun divider() = Divider(Modifier.fillMaxWidth())
-
-
-
-
-
-
-
-
 
 
 }
