@@ -11,5 +11,5 @@ data class Component(
     val data: JsonElement? = null,
     val children: List<Component>? = null,
     val actions: Map<ComponentActionType, JsonElement>? = null,
-val styles: List<ComponentStyle>?= null
+val style: Map<ComponentStyleType,JsonElement>?= null
 )

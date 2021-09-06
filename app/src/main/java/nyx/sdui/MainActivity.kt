@@ -35,7 +35,7 @@ import nyx.sdui.components.base.ComponentAction
 import nyx.sdui.components.base.ComponentActionType
 import nyx.sdui.components.base.ComponentActionType.CLICK
 import nyx.sdui.components.base.ComponentActionType.SELECT
-import nyx.sdui.components.base.ComponentStyle
+import nyx.sdui.components.base.ComponentStyleType
 import nyx.sdui.components.base.ComponentType.*
 import nyx.sdui.screens.LoadingScreen
 import nyx.sdui.ui.theme.SduiTheme
@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
 
             //widgets
             EDIT_TEXT -> textField(component.id, component.data!!.toString())
-            TEXT -> text(Json.decodeFromJsonElement(component.data!!), component.styles)
+            TEXT -> text(Json.decodeFromJsonElement(component.data!!), component.style)
             IMAGE -> image(Json.decodeFromJsonElement(component.data!!))
             BUTTON -> textButton(
                 component.id,
@@ -125,20 +125,20 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun text(text: String, styles: List<ComponentStyle>?) {
+    fun text(text: String, styles: Map<ComponentStyleType, JsonElement>?) {
 
         var paddingValues = PaddingValues(0.dp)
         var color = Black
 
         styles?.forEach { style ->
-            when (style) {
-                is ComponentStyle.Padding -> {
-                    paddingValues =
-                        PaddingValues(style.start.dp, style.top.dp, style.end.dp, style.bottom.dp)
+            when (style.key) {
+                ComponentStyleType.PADDING -> {
+                    val paddings = Json.decodeFromJsonElement<List<Int>>(style.value)
+                    paddingValues = PaddingValues(paddings[0].dp, paddings[1].dp,paddings[2].dp,paddings[3].dp,)
                 }
 
-                is ComponentStyle.Color -> {
-                    color = Color(style.color)
+                ComponentStyleType.COLOR -> {
+                    color = Color(Json.decodeFromJsonElement<Long>(style.value))
                 }
             }
         }
