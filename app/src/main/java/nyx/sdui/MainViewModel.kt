@@ -16,7 +16,6 @@ class MainViewModel : ViewModel() {
     private val TAG = "MainViewModel"
     val result = MutableStateFlow<Status<Any>>(Loading())
 
-    var data = mutableStateOf<MutableMap<String, Any>?>(null)
 
 
     init {
@@ -28,7 +27,6 @@ class MainViewModel : ViewModel() {
             result.value = Loading()
             try {
                 result.value = Success(Repository.getContent())
-                data.value = (result.value as Success).page.data.toMutableMap()
             } catch (e: Exception) {
                 Log.e(TAG, e.message!!)
                 result.value = Failure(e)
@@ -36,11 +34,11 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun performClick(id: String) {
+    fun <T> performClick(id: String, data:Map<String, T>) {
         viewModelScope.launch(Dispatchers.IO) {
             result.value = Loading()
             try {
-                result.value = Success(Repository.performClick(id, data.value!!.toMap()))
+                result.value = Success(Repository.performClick(id, data))
             } catch (e: Exception) {
                 Log.e(TAG, e.message!!)
                 result.value = Failure(e)

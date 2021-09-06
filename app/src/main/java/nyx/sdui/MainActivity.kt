@@ -23,14 +23,14 @@ import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.encodeToJsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.Status.*
 import nyx.sdui.components.base.Component
 import nyx.sdui.components.base.ComponentAction
 import nyx.sdui.components.base.ComponentActionType
+import nyx.sdui.components.base.ComponentActionType.CLICK
+import nyx.sdui.components.base.ComponentActionType.SELECT
 import nyx.sdui.components.base.ComponentType.*
 import nyx.sdui.screens.LoadingScreen
 import nyx.sdui.ui.theme.SduiTheme
@@ -91,12 +91,12 @@ class MainActivity : ComponentActivity() {
 
             //widgets
             EDIT_TEXT -> textField(component.id, component.data!!.toString())
-            TEXT -> text(component.id)
+            TEXT -> text(component.id + "-TEXX")
             IMAGE -> image(component.data!!.toString())
             BUTTON -> textButton(
                 component.id,
                 component.data!!.toString(),
-                component.actions!![ComponentActionType.CLICK]!!
+                component.actions!![CLICK]!!
             )
             DIVIDER -> divider()
         }
@@ -106,13 +106,13 @@ class MainActivity : ComponentActivity() {
     fun ResolveAction(actionType: ComponentActionType, action: Any) {
 
         when (actionType) {
-            ComponentActionType.CLICK -> {
+            CLICK -> {
                 when (action) {
                     ComponentAction.OPEN_PAGE -> {
                     }
                 }
             }
-            ComponentActionType.SELECT -> {
+            SELECT -> {
 
             }
         }
@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun text(id: String) = Text(viewModel.data.value?.get(id).toString())
+    fun text(text: String) = Text(text)
 
     @SuppressLint("ComposableNaming")
     @Composable
@@ -129,7 +129,7 @@ class MainActivity : ComponentActivity() {
         TextField(
             value = text,
             onValueChange = {
-                viewModel.data.value?.set(id, Json.encodeToJsonElement(it.text))
+                //  viewModel.data.value?.set(id, Json.encodeToJsonElement(it.text))
                 text = it
             })
     }
@@ -153,7 +153,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun textButton(id: String, text: String, action: JsonElement) =
         Button({
-            viewModel.performClick(id)
+            viewModel.performClick(id, mapOf("awad" to "Kuuu"))
             //  resolveAction()
         }, Modifier.padding(top = 40.dp)) {
             Text(text)

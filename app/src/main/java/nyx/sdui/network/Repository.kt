@@ -3,10 +3,7 @@ package nyx.sdui.network
 import android.util.Log
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 import nyx.sdui.Page
-import nyx.sdui.components.base.AnySerializer
 import nyx.sdui.model.UserEntity
 
 object Repository {
@@ -15,7 +12,6 @@ object Repository {
 
     val END_POINT_GET_USER_KTOR = ""
     val END_POINT_POST_USER_KTOR = ""
-
 
     suspend fun saveUser(user: UserEntity) {
         client.post<UserEntity>(END_POINT_POST_USER_KTOR) {
@@ -58,7 +54,7 @@ object Repository {
 
 
     //make this appear
-    suspend fun performClick(id: String, data: Map<String, @Serializable(AnySerializer::class) Any>): Page =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
+    suspend  fun<T> performClick(id: String, data: Map<String, T>): Page =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
         LayoutResponse("1283", LayoutType.TEXT, "ID: $id"),
         LayoutResponse("12",
             LayoutType.BUTTON, "Click me (fix this part lel)",/*{
