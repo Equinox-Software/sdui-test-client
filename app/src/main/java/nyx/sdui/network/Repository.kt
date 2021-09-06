@@ -3,7 +3,11 @@ package nyx.sdui.network
 import android.util.Log
 import io.ktor.client.request.*
 import io.ktor.http.*
-import nyx.sdui.Page
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
+import nyx.sdui.components.base.Component
 import nyx.sdui.model.UserEntity
 
 object Repository {
@@ -19,7 +23,7 @@ object Repository {
         }
     }
 
-    suspend fun getContent(): Page = /*TopLayoutResponse("1672222", listOf(
+    suspend fun getContent(): Component = /*TopLayoutResponse("1672222", listOf(
     LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
     LayoutResponse("12",
     LayoutType.BUTTON, "Click me (fix this part lel)",/*{
@@ -54,7 +58,7 @@ object Repository {
 
 
     //make this appear
-    suspend  fun<T> performClick(id: String, data: Map<String, T>): Page =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
+    suspend fun performClick(id: String, data: Map<String, Any>): Component =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
         LayoutResponse("1283", LayoutType.TEXT, "ID: $id"),
         LayoutResponse("12",
             LayoutType.BUTTON, "Click me (fix this part lel)",/*{
@@ -78,9 +82,25 @@ object Repository {
     */
 
 
+
+
         client.post("click${id}") {
             for (i in data.values) {
                 Log.e("REPO", i.toString())
+            }
+
+            data.values.map { value ->
+                when (value) {
+                    is String -> Json.encodeToJsonElement(value)
+                    is Int -> Json.encodeToJsonElement(value)
+                    is Boolean -> Json.encodeToJsonElement(value)
+                    is Long -> Json.encodeToJsonElement(value)
+                    is List<*> -> Json.encodeToJsonElement(value) //might fail
+
+                    else -> throw SerializationException("Unsupported Type! Can't serialize $value.")
+                }
+
+
             }
 
 

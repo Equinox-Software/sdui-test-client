@@ -1,13 +1,11 @@
 package nyx.sdui
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.JsonElement
 import nyx.sdui.Status.*
 import nyx.sdui.network.Repository
 
@@ -15,8 +13,6 @@ class MainViewModel : ViewModel() {
 
     private val TAG = "MainViewModel"
     val result = MutableStateFlow<Status<Any>>(Loading())
-
-
 
     init {
         fetchContent()
@@ -34,7 +30,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun <T> performClick(id: String, data:Map<String, T>) {
+    fun performClick(id: String, data: Map<String, Any>) {
         viewModelScope.launch(Dispatchers.IO) {
             result.value = Loading()
             try {

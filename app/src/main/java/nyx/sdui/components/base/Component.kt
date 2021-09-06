@@ -1,6 +1,5 @@
 package nyx.sdui.components.base
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
@@ -11,5 +10,6 @@ data class Component(
     //might be better to use more parameters than packing it all into data
     val data: JsonElement? = null,
     val children: List<Component>? = null,
-    val actions: Map<ComponentActionType, JsonElement>? = null
+    val actions: Map<ComponentActionType, JsonElement>? = null,
+val styles: List<ComponentStyle>?= null
 )

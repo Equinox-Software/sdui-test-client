@@ -16,6 +16,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
@@ -23,7 +25,9 @@ import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.Status.*
 import nyx.sdui.components.base.Component
@@ -31,6 +35,7 @@ import nyx.sdui.components.base.ComponentAction
 import nyx.sdui.components.base.ComponentActionType
 import nyx.sdui.components.base.ComponentActionType.CLICK
 import nyx.sdui.components.base.ComponentActionType.SELECT
+import nyx.sdui.components.base.ComponentStyle
 import nyx.sdui.components.base.ComponentType.*
 import nyx.sdui.screens.LoadingScreen
 import nyx.sdui.ui.theme.SduiTheme
@@ -56,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
                     is Success -> {
                         Log.w(TAG, "Success")
-                        ResolveComponent(result.page.layout)
+                        ResolveComponent(result.layout)
                     }
 
                     is Failure -> {
@@ -91,8 +96,8 @@ class MainActivity : ComponentActivity() {
 
             //widgets
             EDIT_TEXT -> textField(component.id, component.data!!.toString())
-            TEXT -> text(component.id + "-TEXX")
-            IMAGE -> image(component.data!!.toString())
+            TEXT -> text(Json.decodeFromJsonElement(component.data!!), component.styles)
+            IMAGE -> image(Json.decodeFromJsonElement(component.data!!))
             BUTTON -> textButton(
                 component.id,
                 component.data!!.toString(),
@@ -120,7 +125,26 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun text(text: String) = Text(text)
+    fun text(text: String, styles: List<ComponentStyle>?) {
+
+        var paddingValues = PaddingValues(0.dp)
+        var color = Black
+
+        styles?.forEach { style ->
+            when (style) {
+                is ComponentStyle.Padding -> {
+                    paddingValues =
+                        PaddingValues(style.start.dp, style.top.dp, style.end.dp, style.bottom.dp)
+                }
+
+                is ComponentStyle.Color -> {
+                    color = Color(style.color)
+                }
+            }
+        }
+
+        Text(text, Modifier.padding(paddingValues), color = color)
+    }
 
     @SuppressLint("ComposableNaming")
     @Composable
