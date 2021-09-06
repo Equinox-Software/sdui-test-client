@@ -4,7 +4,9 @@ import android.util.Log
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
-import nyx.sdui.components.base.Component
+import kotlinx.serialization.json.JsonElement
+import nyx.sdui.Page
+import nyx.sdui.components.base.AnySerializer
 import nyx.sdui.model.UserEntity
 
 object Repository {
@@ -21,7 +23,7 @@ object Repository {
         }
     }
 
-    suspend fun getContent(): Component = /*TopLayoutResponse("1672222", listOf(
+    suspend fun getContent(): Page = /*TopLayoutResponse("1672222", listOf(
     LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
     LayoutResponse("12",
     LayoutType.BUTTON, "Click me (fix this part lel)",/*{
@@ -56,7 +58,7 @@ object Repository {
 
 
     //make this appear
-    suspend fun performClick(id: String, data: @Serializable Map<String, String>?): Component =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
+    suspend fun performClick(id: String, data: Map<String, @Serializable(AnySerializer::class) Any>): Page =/* TopLayoutResponse("12222", listOf(        LayoutResponse("123", LayoutType.TEXT, "Some text goes here"),
         LayoutResponse("1283", LayoutType.TEXT, "ID: $id"),
         LayoutResponse("12",
             LayoutType.BUTTON, "Click me (fix this part lel)",/*{
@@ -81,8 +83,8 @@ object Repository {
 
 
         client.post("click${id}") {
-            for(i in data?.values!!){
-                Log.e("REPO", i)
+            for (i in data.values) {
+                Log.e("REPO", i.toString())
             }
 
 
@@ -93,7 +95,7 @@ object Repository {
             Log.e("REPO", "DATA - ID -- ${data["abTuT"]}")
 
             contentType(ContentType.Application.Json)
-                body = data
+            body = data
 
         }
 

@@ -46,7 +46,8 @@ interface SuspendingLoadableViewScope {
 
 
 @OptIn(DelicateCoroutinesApi::class)
-private class SuspendingLoadableViewScopeWithoutSpinner(other: SuspendingLoadableViewScope) : SuspendingLoadableViewScope by other {
+private class SuspendingLoadableViewScopeWithoutSpinner(other: SuspendingLoadableViewScope) :
+    SuspendingLoadableViewScope by other {
     @SuppressLint("ComposableNaming")
     @Composable
     override fun whenReady(block: @Composable SuspendingLoadableViewScope.() -> Unit) {
@@ -74,12 +75,18 @@ sealed class StateKey {
 
 
 @OptIn(DelicateCoroutinesApi::class)
-private class SuspendingLoadableViewScopeImpl(val scope: CoroutineScope, override val readyStatesState: SnapshotStateMap<StateKey, Pair<State<Boolean>, Deferred<Any?>>>) : SuspendingLoadableViewScope {
+private class SuspendingLoadableViewScopeImpl(
+    val scope: CoroutineScope,
+    override val readyStatesState: SnapshotStateMap<StateKey, Pair<State<Boolean>, Deferred<Any?>>>
+) : SuspendingLoadableViewScope {
     private class LoadAsyncDelegateProvider<T>(
         val scope: SuspendingLoadableViewScopeImpl,
         val block: suspend CoroutineScope.() -> T
     ) : PropertyDelegateProvider<Nothing?, DeferredDelegate<T>> {
-        override fun provideDelegate(thisRef: Nothing?, property: KProperty<*>): DeferredDelegate<T> {
+        override fun provideDelegate(
+            thisRef: Nothing?,
+            property: KProperty<*>
+        ): DeferredDelegate<T> {
             val state = mutableStateOf(false)
             val key = StateKey.StringKey(property.name)
             scope.readyStatesState[key]?.let {

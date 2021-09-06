@@ -10,7 +10,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
@@ -24,7 +23,9 @@ import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.Status.*
 import nyx.sdui.components.base.Component
@@ -40,11 +41,13 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
     private val TAG = "MainActivity"
 
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             SduiTheme {
+
                 when (val result = viewModel.result.collectAsState().value) {
                     is Loading -> {
                         Log.w(TAG, "Loading")
@@ -53,11 +56,11 @@ class MainActivity : ComponentActivity() {
 
                     is Success -> {
                         Log.w(TAG, "Success")
-                        ResolveComponent(result.data as Component)
+                        ResolveComponent(result.page.layout)
                     }
 
                     is Failure -> {
-                        val e = result.exception as Exception
+                        val e = result.exception
 
                         Log.e(
                             TAG,
@@ -83,12 +86,12 @@ class MainActivity : ComponentActivity() {
             BOX -> box(component.children!!)
             VERTICAL -> column(component.children!!)
             SCROLL_VERTICAL -> lazyColumn(component.children!!)
-            SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
-            SELECTABLE_ROW -> selectableRow(component.data!! as Map<String,String>)
+            //     SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
+            //   SELECTABLE_ROW -> selectableRow(component.data!! as Map<String,String>)
 
             //widgets
             EDIT_TEXT -> textField(component.id, component.data!!.toString())
-            TEXT -> text(component.data!!.toString())
+            TEXT -> text(component.id)
             IMAGE -> image(component.data!!.toString())
             BUTTON -> textButton(
                 component.id,
@@ -117,7 +120,7 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun text(text: String) = Text(text)
+    fun text(id: String) = Text(viewModel.data.value?.get(id).toString())
 
     @SuppressLint("ComposableNaming")
     @Composable
@@ -126,7 +129,7 @@ class MainActivity : ComponentActivity() {
         TextField(
             value = text,
             onValueChange = {
-                viewModel.data[id] = it.text
+                viewModel.data.value?.set(id, Json.encodeToJsonElement(it.text))
                 text = it
             })
     }
@@ -178,7 +181,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @SuppressLint("ComposableNaming")
+/*    @SuppressLint("ComposableNaming")
     @Composable
     fun selectableLazyColumn(children: List<Component>) = LazyColumn(Modifier.padding(16.dp)) {
         for (child in children) {
@@ -199,7 +202,7 @@ class MainActivity : ComponentActivity() {
         Row(
             Modifier
                 .padding(10.dp)
-                .selectable(selected) {
+                .selectable {
                     selected = !selected
                 }) {
             if (selected) {
@@ -210,6 +213,8 @@ class MainActivity : ComponentActivity() {
 
         }
     }
+
+ */
 
     @SuppressLint("ComposableNaming")
     @Composable

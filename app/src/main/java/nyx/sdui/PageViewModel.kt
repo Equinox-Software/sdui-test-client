@@ -14,7 +14,6 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import nyx.sdui.components.base.Component
-import nyx.sdui.network.Repository
 
 @Serializable
 class PageViewModel(private val pageName: String) : ViewModel() {
@@ -38,7 +37,7 @@ class PageViewModel(private val pageName: String) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             result.value = LoadingState.LOADING
             try {
-                layout = Repository.getContent()
+                //  layout = Repository.getContent()
 
                 result.value = LoadingState.SUCCESS
 

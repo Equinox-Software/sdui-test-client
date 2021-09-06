@@ -38,9 +38,9 @@ interface BasePage {
             ComponentType.SELECTABLE_ROW -> selectableRow(component.data!! as Map<String, JsonElement>)
 
             //widgets
-            ComponentType.EDIT_TEXT -> textField(component.id, component.data!!as String)
+            ComponentType.EDIT_TEXT -> textField(component.id, component.data!! as String)
             ComponentType.TEXT -> text(component.data!! as String)
-            ComponentType.IMAGE -> image(component.data!!as String)
+            ComponentType.IMAGE -> image(component.data!! as String)
             //      BUTTON -> textButton(component.data!!["text"].toString(),component.actions!![ComponentActionType.CLICK])
             ComponentType.DIVIDER -> divider()
         }
@@ -57,7 +57,7 @@ interface BasePage {
         TextField(
             value = text,
             onValueChange = {
-            //    viewModel.data[id] = it.text
+                //    viewModel.data[id] = it.text
                 text = it
             })
     }
@@ -109,7 +109,7 @@ interface BasePage {
     fun selectableLazyColumn(children: List<Component>) = LazyColumn(Modifier.padding(16.dp)) {
         for (child in children) {
             item {
-                selectableRow(child.data!! as  Map<String, JsonElement>)
+                selectableRow(child.data!! as Map<String, JsonElement>)
                 divider()
             }
         }
@@ -122,12 +122,15 @@ interface BasePage {
             mutableStateOf(false)
         }
 
-        Row(Modifier.padding(10.dp).selectable(selected) {
-            selected = !selected
-        }) {
-            if(selected){
+        Row(
+            Modifier
+                .padding(10.dp)
+                .selectable(selected) {
+                    selected = !selected
+                }) {
+            if (selected) {
                 text("SELECTED")
-            }else{
+            } else {
                 text(text = data["Text"].toString())
             }
 

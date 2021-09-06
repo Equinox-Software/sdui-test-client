@@ -22,26 +22,25 @@ import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import nyx.felix.screens.ErrorScreen
 import nyx.sdui.components.base.Component
 import nyx.sdui.components.base.ComponentType
 import nyx.sdui.screens.LoadingScreen
 
 @Serializable
-class Page(private val name:String) {
+class PPage(private val name: String) {
 
-   val TAG = "PAGE"
+    val TAG = "PAGE"
     lateinit var layout: Component
 
     private val viewModel = PageViewModel(name)
 
     @Composable
-    fun initializePage(pageData: SnapshotStateMap<String, JsonElement> = mutableStateMapOf()){
+    fun initializePage(pageData: SnapshotStateMap<String, JsonElement> = mutableStateMapOf()) {
         viewModel.data = pageData
         viewModel.fetchContent(name)
 
         when (val result = viewModel.result.collectAsState().value) {
-             LoadingState.LOADING -> {
+            LoadingState.LOADING -> {
                 Log.w(TAG, "Loading")
                 LoadingScreen()
             }
@@ -51,19 +50,19 @@ class Page(private val name:String) {
                 viewModel.layout?.let { ResolveComponent(it) }
             }
 
-             LoadingState.ERROR -> {
-             /*   val e = result.exception as Exception
+            LoadingState.ERROR -> {
+                /*   val e = result.exception as Exception
 
-                Log.e(
-                    TAG,
-                    "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
-                        Log.getStackTraceString(e)
-                    }"
-                )
+                   Log.e(
+                       TAG,
+                       "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
+                           Log.getStackTraceString(e)
+                       }"
+                   )
 
-                ErrorScreen("Loading $TAG failed.", e.message!!)
+                   ErrorScreen("Loading $TAG failed.", e.message!!)
 
-              */
+                 */
             }
         }
     }
@@ -78,7 +77,7 @@ class Page(private val name:String) {
             ComponentType.VERTICAL -> column(component.children!!)
             ComponentType.SCROLL_VERTICAL -> lazyColumn(component.children!!)
             ComponentType.SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
-            ComponentType.SELECTABLE_ROW -> selectableRow(component.data!!)
+            //     ComponentType.SELECTABLE_ROW -> selectableRow(component.data!!)
 
             //widgets
             ComponentType.EDIT_TEXT -> textField(component.id, component.data!!)
@@ -100,7 +99,7 @@ class Page(private val name:String) {
         TextField(
             value = text,
             onValueChange = {
-          //      viewModel.data[id] = it.text
+                //      viewModel.data[id] = it.text
                 text = it
             })
     }
@@ -122,7 +121,7 @@ class Page(private val name:String) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textButton(text: String, action:JsonElement) =
+    fun textButton(text: String, action: JsonElement) =
         Button({
             //  resolveAction()
         }, Modifier.padding(top = 40.dp)) {
@@ -152,7 +151,7 @@ class Page(private val name:String) {
     fun selectableLazyColumn(children: List<Component>) = LazyColumn(Modifier.padding(16.dp)) {
         for (child in children) {
             item {
-                selectableRow(child.data!!)
+                //        selectableRow(child.data!!)
                 divider()
             }
         }
@@ -171,9 +170,9 @@ class Page(private val name:String) {
                 .selectable(selected) {
                     selected = !selected
                 }) {
-            if(selected){
+            if (selected) {
                 text("SELECTED")
-            }else{
+            } else {
                 text(text = data)
             }
 
