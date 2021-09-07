@@ -7,76 +7,224 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
+import io.ktor.client.request.*
+import io.ktor.http.*
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import nyx.felix.screens.ErrorScreen
-import nyx.sdui.Status.*
-import nyx.sdui.components.base.Component
-import nyx.sdui.components.base.ComponentAction
-import nyx.sdui.components.base.ComponentActionType
-import nyx.sdui.components.base.ComponentActionType.CLICK
-import nyx.sdui.components.base.ComponentActionType.SELECT
-import nyx.sdui.components.base.ComponentStyleType
-import nyx.sdui.components.base.ComponentType.*
+import nyx.sdui.components.base.*
+import nyx.sdui.network.ktorHttpClient
 import nyx.sdui.screens.LoadingScreen
 import nyx.sdui.ui.theme.SduiTheme
-
 
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
     private val TAG = "MainActivity"
 
+    private lateinit var navController: NavHostController
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             SduiTheme {
+                /*  when (val result = viewModel.result.collectAsState().value) {
+                      is Status.Loading -> {
+                          Log.w(TAG, "Loading")
+                          LoadingScreen()
+                      }
 
-                when (val result = viewModel.result.collectAsState().value) {
-                    is Loading -> {
-                        Log.w(TAG, "Loading")
-                        LoadingScreen()
-                    }
+                      is Status.Success -> {
+                          Log.w(TAG, "Success")
+                         Content(result.data as Component)
+                      }
 
-                    is Success -> {
-                        Log.w(TAG, "Success")
-                        ResolveComponent(result.layout)
-                    }
+                      is Status.Failure -> {
+                          val e = result.exception as Exception
 
-                    is Failure -> {
-                        val e = result.exception
+                          Log.e(
+                              TAG,
+                              "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
+                                  Log.getStackTraceString(e)
+                              }"
+                          )
 
-                        Log.e(
-                            TAG,
-                            "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
-                                Log.getStackTraceString(e)
-                            }"
-                        )
+                          val msg = e.message!!
 
-                        ErrorScreen("Loading $TAG failed.", e.message!!)
+                          ErrorScreen("Loading $TAG failed.", msg)
+                      }
+                  }
+
+
+                 */
+
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(Modifier.padding(16.dp)) {
+                        /*    Text("Please select your server.")
+
+                            for(i in 1..3){
+                                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable {
+
+                                }.padding(10.dp)){
+                                    Text("Stable")
+                                    Text("- 1234")
+                                }
+                                */
+
+
+                        val scope = rememberCoroutineScope()
+
+
+                        //might launch it here already?
+                        var textt by remember {
+                            mutableStateOf("--- OUTPUT ---")
+                        }
+
+
+                        var routes by remember {
+                            mutableStateOf<List<String>?>(null)
+                        }
+
+                        scope.launch {
+                            delay(2500)
+                            routes = listOf("a", "b", "c")
+                        }
+
+                        navController = rememberNavController()
+
+                        routes?.let {
+                            Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
+                            NavHost(navController, startDestination = "b") {
+                                it.forEach { route ->
+                                    composable(route = route) {
+                                        Screen(route = route)
+                                    }
+                                }
+                            }
+                        }
+
+                        routes?.let {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .clickable {
+
+
+                                        navController.navigate("c")
+
+                                    }
+                                    .padding(10.dp)) {
+                                Text("Stable >>>")
+                            }
+                        }
+
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable {
+
+                                    scope.launch {
+
+                                        val client = ktorHttpClient
+
+
+                                        val token = client.post<Map<String, String>>("/login") {
+                                            contentType(ContentType.Application.Json)
+                                            body = User("fhuuu", "1234")
+                                        }["token"]
+
+                                        Log.d(TAG, "-------------afef\n\n TOKEN::: $token")
+
+                                        textt += "\n\nPOSTED >> TOKEN: $token"
+
+
+                                        val ss = client.get<String>("/hello") {
+                                            header(HttpHeaders.Authorization, "Bearer $token")
+                                        }
+
+                                        Log.d(TAG, "_----------------\n\nSTRING $ss")
+
+                                        textt += "\n\nAUTHORIZED >> RESPONSE: $ss"
+
+
+                                    }
+
+                                }
+                                .padding(10.dp)) {
+                            Text("Stable -- POST")
+
+                        }
+
+                        Text(textt)
+
                     }
                 }
+            }
+
+        }
+    }
+
+
+    @OptIn(DelicateCoroutinesApi::class)
+    @Composable
+    fun Screen(route: String) {
+
+        viewModel.fetchContent(route)
+
+        when (val result = viewModel.result.collectAsState().value) {
+            is Status.Loading -> {
+                Log.w(TAG, "Loading")
+                LoadingScreen()
+            }
+
+            is Status.Success -> {
+                Log.w(TAG, "Success")
+                ResolveComponent(result.layout)
+
+
+            }
+
+            is Status.Failure -> {
+                val e = result.exception
+
+                Log.e(
+                    TAG,
+                    "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
+                        Log.getStackTraceString(e)
+                    }"
+                )
+
+                ErrorScreen("Loading $TAG failed.", e.message!!)
             }
         }
     }
@@ -88,22 +236,28 @@ class MainActivity : ComponentActivity() {
         //TODO What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
         when (component.type) {
             //layouts
-            BOX -> box(component.children!!)
-            VERTICAL -> column(component.children!!)
-            SCROLL_VERTICAL -> lazyColumn(component.children!!)
+            ComponentType.BOX -> box(component.children!!)
+            ComponentType.VERTICAL -> column(component.children!!)
+            ComponentType.SCROLL_VERTICAL -> lazyColumn(component.children!!)
             //     SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
             //   SELECTABLE_ROW -> selectableRow(component.data!! as Map<String,String>)
 
             //widgets
-            EDIT_TEXT -> textField(component.id, component.data!!.toString())
-            TEXT -> text(Json.decodeFromJsonElement(component.data!!), component.style)
-            IMAGE -> image(Json.decodeFromJsonElement(component.data!!))
-            BUTTON -> textButton(
+            ComponentType.EDIT_TEXT -> textField(
                 component.id,
-                component.data!!.toString(),
-                component.actions!![CLICK]!!
+                Json.decodeFromJsonElement(component.data!!)
             )
-            DIVIDER -> divider()
+            ComponentType.TEXT -> text(
+                Json.decodeFromJsonElement(component.data!!),
+                component.style
+            )
+            ComponentType.IMAGE -> image(Json.decodeFromJsonElement(component.data!!))
+            ComponentType.BUTTON -> textButton(
+                component.id,
+                Json.decodeFromJsonElement(component.data!!),
+                component.actions!![ComponentActionType.CLICK]!!
+            )
+            ComponentType.DIVIDER -> divider()
         }
     }
 
@@ -111,13 +265,13 @@ class MainActivity : ComponentActivity() {
     fun ResolveAction(actionType: ComponentActionType, action: Any) {
 
         when (actionType) {
-            CLICK -> {
+            ComponentActionType.CLICK -> {
                 when (action) {
                     ComponentAction.OPEN_PAGE -> {
                     }
                 }
             }
-            SELECT -> {
+            ComponentActionType.SELECT -> {
 
             }
         }
@@ -125,36 +279,39 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun text(text: String, styles: Map<ComponentStyleType, JsonElement>?) {
+    fun text(text: String, styles: CStyle) {
+        ////// better than list? >>>  PaddingValues(0.dp)
 
-        var paddingValues = PaddingValues(0.dp)
-        var color = Black
+        styles.color
 
-        styles?.forEach { style ->
-            when (style.key) {
-                ComponentStyleType.PADDING -> {
-                    val paddings = Json.decodeFromJsonElement<List<Int>>(style.value)
-                    paddingValues = PaddingValues(paddings[0].dp, paddings[1].dp,paddings[2].dp,paddings[3].dp,)
-                }
 
-                ComponentStyleType.COLOR -> {
-                    color = Color(Json.decodeFromJsonElement<Long>(style.value))
-                }
-            }
-        }
+        Text(
+            text,
+            Modifier.padding(
+                PaddingValues(
+                    styles.padding[0].dp,
+                    styles.padding[1].dp,
+                    styles.padding[2].dp,
+                    styles.padding[3].dp
+                )
+            ),
+            color = Color(styles.color)
+        )
 
-        Text(text, Modifier.padding(paddingValues), color = color)
+
     }
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textField(id: String, defaultValue: String?) {
-        var text by remember { mutableStateOf(TextFieldValue(defaultValue ?: "")) }
+    fun textField(id: String, defaultValue: String = "") {
+        var text by remember { mutableStateOf(defaultValue) }
         TextField(
             value = text,
             onValueChange = {
                 //  viewModel.data.value?.set(id, Json.encodeToJsonElement(it.text))
                 text = it
+            }, label = {
+                Text("what you enter here should appear on the next page (not yet)")
             })
     }
 
@@ -177,9 +334,17 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun textButton(id: String, text: String, action: JsonElement) =
         Button({
-            viewModel.performClick(id, mapOf("awad" to "Kuuu"))
+            ////   viewModel.performClick(id, mapOf("awad" to "Kuuu"))
+
+            val routes = listOf("a", "b", "c")
+
+
+            // navController.navigate(routes[routes.indices.random()])
+
+            navController.navigate("a")
+
             //  resolveAction()
-        }, Modifier.padding(top = 40.dp)) {
+        }) {
             Text(text)
         }
 
@@ -188,10 +353,6 @@ class MainActivity : ComponentActivity() {
     fun column(children: List<Component>) = Column(Modifier.padding(16.dp)) {
         for (child in children) {
             ResolveComponent(child)
-
-            var amir by remember {
-                mutableStateOf("lavat")
-            }
         }
     }
 
@@ -273,5 +434,5 @@ class MainActivity : ComponentActivity() {
 
 }
 
-
-
+@Serializable
+data class User(val username: String, val password: String)

@@ -11,7 +11,7 @@ import io.ktor.client.features.observer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-val ktorHttpClient = HttpClient(CIO) {
+val client = HttpClient(CIO) {
 
     defaultRequest {
         host = "rw-ktor-server.herokuapp.com"
