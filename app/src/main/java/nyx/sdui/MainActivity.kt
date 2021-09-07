@@ -17,7 +17,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -30,8 +29,6 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
-import io.ktor.client.request.*
-import io.ktor.http.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -41,7 +38,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.components.base.*
-import nyx.sdui.network.ktorHttpClient
 import nyx.sdui.screens.LoadingScreen
 import nyx.sdui.ui.theme.SduiTheme
 
@@ -52,6 +48,8 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var navController: NavHostController
 
+    //TODO get rid of that via login anyway
+    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -86,114 +84,91 @@ class MainActivity : ComponentActivity() {
 
                  */
 
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(Modifier.padding(16.dp)) {
-                        /*    Text("Please select your server.")
+                val scope = rememberCoroutineScope()
 
-                            for(i in 1..3){
-                                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable {
+                var routes by remember {
+                    mutableStateOf<List<String>?>(null)
+                }
 
-                                }.padding(10.dp)){
-                                    Text("Stable")
-                                    Text("- 1234")
-                                }
-                                */
+                scope.launch {
+                    delay(2500)
+                    routes = listOf("a", "b", "c")
+                }
 
+                navController = rememberNavController()
 
-                        val scope = rememberCoroutineScope()
-
-
-                        //might launch it here already?
-                        var textt by remember {
-                            mutableStateOf("--- OUTPUT ---")
-                        }
-
-
-                        var routes by remember {
-                            mutableStateOf<List<String>?>(null)
-                        }
-
-                        scope.launch {
-                            delay(2500)
-                            routes = listOf("a", "b", "c")
-                        }
-
-                        navController = rememberNavController()
-
-                        routes?.let {
-                            Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
-                            NavHost(navController, startDestination = "b") {
-                                it.forEach { route ->
-                                    composable(route = route) {
-                                        Screen(route = route)
-                                    }
-                                }
+                routes?.let {
+                    Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
+                    NavHost(navController, startDestination = "b") {
+                        it.forEach { route ->
+                            composable(route = route) {
+                                Screen(route = route)
                             }
                         }
-
-                        routes?.let {
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .clickable {
-
-
-                                        navController.navigate("c")
-
-                                    }
-                                    .padding(10.dp)) {
-                                Text("Stable >>>")
-                            }
-                        }
-
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable {
-
-                                    scope.launch {
-
-                                        val client = ktorHttpClient
-
-
-                                        val token = client.post<Map<String, String>>("/login") {
-                                            contentType(ContentType.Application.Json)
-                                            body = User("fhuuu", "1234")
-                                        }["token"]
-
-                                        Log.d(TAG, "-------------afef\n\n TOKEN::: $token")
-
-                                        textt += "\n\nPOSTED >> TOKEN: $token"
-
-
-                                        val ss = client.get<String>("/hello") {
-                                            header(HttpHeaders.Authorization, "Bearer $token")
-                                        }
-
-                                        Log.d(TAG, "_----------------\n\nSTRING $ss")
-
-                                        textt += "\n\nAUTHORIZED >> RESPONSE: $ss"
-
-
-                                    }
-
-                                }
-                                .padding(10.dp)) {
-                            Text("Stable -- POST")
-
-                        }
-
-                        Text(textt)
-
                     }
                 }
-            }
 
+            /*    routes?.let {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
+
+
+                                navController.navigate("c")
+
+                            }
+                            .padding(10.dp)) {
+                        Text("Stable >>>")
+                    }
+                }
+             */
+
+                /*
+                Will be useful for login
+Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(Modifier.padding(16.dp)) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable {
+
+                            scope.launch {
+
+                                val token = client.post<Map<String, String>>("/login") {
+                                    contentType(ContentType.Application.Json)
+                                    body = User("fhuuu", "1234")
+                                }["token"]
+
+                                Log.d(TAG, "-------------afef\n\n TOKEN::: $token")
+
+                                textt += "\n\nPOSTED >> TOKEN: $token"
+
+
+                                val ss = client.get<String>("/hello") {
+                                    header(HttpHeaders.Authorization, "Bearer $token")
+                                }
+
+                                Log.d(TAG, "_----------------\n\nSTRING $ss")
+
+                                textt += "\n\nAUTHORIZED >> RESPONSE: $ss"
+
+
+                            }
+
+                        }
+                        .padding(10.dp)) {
+                    Text("Stable -- POST")
+
+                }
+
+                Text(textt)}}
+*/
+            }
         }
     }
-
 
     @OptIn(DelicateCoroutinesApi::class)
     @Composable
