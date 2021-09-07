@@ -1,14 +1,10 @@
 package nyx.sdui
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import kotlinx.coroutines.*
+import nyx.sdui.screens.LoadingScreen
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.random.Random
@@ -155,12 +151,8 @@ private fun LoadableView(
     if (ready) {
         block()
     }
+
     if (!ready) { // we may no longer be ready
-        Box(
-            Modifier.fillMaxSize(),
-            Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
+        LoadingScreen()
     }
 }

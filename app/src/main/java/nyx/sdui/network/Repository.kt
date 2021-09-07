@@ -12,6 +12,8 @@ object Repository {
 
     suspend fun getContent(route: String): Component = client.get("content/$route")
 
+    suspend fun getRoutes(): List<String> = client.get("routes")
+
     //make this appear
     suspend fun performClick(id: String, data: Map<String, Any>): Component =
         client.post("click${id}") {

@@ -3,22 +3,20 @@ package nyx.sdui
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -30,15 +28,11 @@ import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.components.base.*
-import nyx.sdui.screens.LoadingScreen
 import nyx.sdui.ui.theme.SduiTheme
 
 class MainActivity : ComponentActivity() {
@@ -49,6 +43,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
 
     //TODO get rid of that via login anyway
+    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,46 +79,53 @@ class MainActivity : ComponentActivity() {
 
                  */
 
-                val scope = rememberCoroutineScope()
+                LoadableView {
+                    val result by loadAsync {
+                        viewModel.fetchRoutes()
+                    }
 
-                var routes by remember {
-                    mutableStateOf<List<String>?>(null)
-                }
+                    whenReady {
+                        when (result) {
+                            is Exception -> ErrorScreen(
+                                errorTitle = "Loading Routes failed.",
+                                errorMessage = (result as Exception).message!!
+                            )
+                            is List<*> -> {
+                                val routes = result as List<String>
+                                Log.d(TAG, "Loaded routes: $routes")
 
-                scope.launch {
-                    delay(2500)
-                    routes = listOf("a", "b", "c")
-                }
+                                navController = rememberNavController()
 
-                navController = rememberNavController()
+                                Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
+                                NavHost(navController, startDestination = "b") {
+                                    routes.forEach { route ->
+                                        composable(route = route) {
+                                            Screen(route = route)
+                                        }
+                                    }
+                                }
 
-                routes?.let {
-                    Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
-                    NavHost(navController, startDestination = "b") {
-                        it.forEach { route ->
-                            composable(route = route) {
-                                Screen(route = route)
                             }
                         }
                     }
                 }
 
-            /*    routes?.let {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .clickable {
+                /*    routes?.let {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable {
 
 
-                                navController.navigate("c")
+                                    navController.navigate("c")
 
-                            }
-                            .padding(10.dp)) {
-                        Text("Stable >>>")
+                                }
+                                .padding(10.dp)) {
+                            Text("Stable >>>")
+                        }
                     }
-                }
-             */
+                 */
 
                 /*
                 Will be useful for login
@@ -172,34 +174,18 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @OptIn(DelicateCoroutinesApi::class)
     @Composable
-    fun Screen(route: String) {
+    fun Screen(route: String) = LoadableView {
+        val result by loadAsync {
+            viewModel.fetchContent(route)
+        }
 
-        viewModel.fetchContent(route)
-
-        when (val result = viewModel.result.collectAsState().value) {
-            is Status.Loading -> {
-                Log.w(TAG, "Loading")
-                LoadingScreen()
-            }
-
-            is Status.Success -> {
-                Log.w(TAG, "Success")
-                ResolveComponent(result.layout)
-
-
-            }
-
-            is Status.Failure -> {
-                val e = result.exception
-
-                Log.e(
-                    TAG,
-                    "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
-                        Log.getStackTraceString(e)
-                    }"
+        whenReady {
+            when (result) {
+                is Exception -> ErrorScreen(
+                    errorTitle = "Loading Page $route failed.",
+                    errorMessage = (result as Exception).message!!
                 )
-
-                ErrorScreen("Loading $TAG failed.", e.message!!)
+                is Component -> ResolveComponent(result as Component)
             }
         }
     }
@@ -230,7 +216,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             ComponentType.BUTTON -> textButton(
                 component.id,
                 Json.decodeFromJsonElement(component.data!!),
-                component.actions!![ComponentActionType.CLICK]!!
+                component.action!!
             )
             ComponentType.DIVIDER -> divider()
         }
@@ -256,9 +242,6 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     @Composable
     fun text(text: String, styles: CStyle) {
         ////// better than list? >>>  PaddingValues(0.dp)
-
-        styles.color
-
 
         Text(
             text,
@@ -307,21 +290,28 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textButton(id: String, text: String, action: JsonElement) =
-        Button({
-            ////   viewModel.performClick(id, mapOf("awad" to "Kuuu"))
+    fun textButton(id: String, text: String, action: CAction) = Button({
+        ////   viewModel.performClick(id, mapOf("awad" to "Kuuu"))
 
-            val routes = listOf("a", "b", "c")
+        val routes = listOf("a", "b", "c")
 
+        action.click?.let {
+//what to do here??
 
-            // navController.navigate(routes[routes.indices.random()])
-
-            navController.navigate("a")
-
-            //  resolveAction()
-        }) {
-            Text(text)
+            Toast.makeText(this, "Click --- $it", Toast.LENGTH_LONG).show()
         }
+
+        action.navigate?.let {
+            navController.navigate(it)
+        }
+
+
+        //    navController.navigate("a")
+
+        //  resolveAction()
+    }) {
+        Text(text)
+    }
 
     @SuppressLint("ComposableNaming")
     @Composable

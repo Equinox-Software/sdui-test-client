@@ -1,9 +1,11 @@
 package nyx.sdui.components.base
 
 enum class ComponentActionType {
-    CLICK, SELECT
+    CLICK,
+    SELECT
 }
 
 enum class ComponentAction {
-    OPEN_PAGE, SELECT
+    OPEN_PAGE,
+    SELECT
 }

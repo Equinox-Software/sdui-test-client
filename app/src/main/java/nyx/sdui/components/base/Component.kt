@@ -10,6 +10,6 @@ data class Component(
     //might be better to use more parameters than packing it all into data
     val data: JsonElement? = null,
     val children: List<Component>? = null,
-    val actions: Map<ComponentActionType, JsonElement>? = null,
+    val action: CAction? = null,
     val style: CStyle = CStyle()
 )

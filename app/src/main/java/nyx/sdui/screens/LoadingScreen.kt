@@ -36,25 +36,20 @@ fun LoadingScreen() {
         Modifier
             .fillMaxSize()
             .background(Teal200)
-            .clickable { infoText = infoTexts.random() }
-            .padding(32.dp),
+            .clickable { infoText = infoTexts.random() },
         Arrangement.Center,
         Alignment.CenterHorizontally,
     ) {
-
-        // Image(painterResource(R.mipmap.ic_launcher), "Loading Image", Modifier.size(50.dp))
-
         Text(
             infoText,
-            Modifier.padding(16.dp),
-            White,
-            16.sp
+            color = White,
+            fontSize = 16.sp
         )
 
         CircularProgressIndicator(
             Modifier
-                .size(14.dp)
-                .padding(16.dp), strokeWidth = 2.dp
+                .size(20.dp)
+                .padding(top = 16.dp), strokeWidth = 2.dp
         )
     }
 }
