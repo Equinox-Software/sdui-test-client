@@ -35,6 +35,7 @@ import nyx.felix.screens.ErrorScreen
 import nyx.sdui.components.base.*
 import nyx.sdui.ui.theme.SduiTheme
 import nyx.sdui.util.applyStyle
+import nyx.sdui.components.base.ComponentType.*
 import nyx.sdui.util.paddingValues
 
 class MainActivity : ComponentActivity() {
@@ -199,28 +200,30 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         //TODO What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
         when (component.type) {
             //layouts
-            ComponentType.BOX -> box(component.children!!)
-            ComponentType.VERTICAL -> column(component.children!!,component.style)
-            ComponentType.SCROLL_VERTICAL -> lazyColumn(component.children!!)
+            BOX -> box(component.children!!,component.style)
+            VERTICAL -> column(component.children!!,component.style)
+            SCROLL_VERTICAL -> lazyColumn(component.children!!,component.style)
+            HORIZONTAL -> row(component.children!!,component.style)
+            SCROLL_HORIZONTAL -> lazyRow(component.children!!,component.style)
             //     SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
             //   SELECTABLE_ROW -> selectableRow(component.data!! as Map<String,String>)
 
             //widgets
-            ComponentType.EDIT_TEXT -> textField(
+            EDIT_TEXT -> textField(
                 component.id,
                 Json.decodeFromJsonElement(component.data!!),component.style
             )
-            ComponentType.TEXT -> text(
+            TEXT -> text(
                 Json.decodeFromJsonElement(component.data!!),
                 component.style
             )
-            ComponentType.IMAGE -> image(Json.decodeFromJsonElement(component.data!!),component.style)
-            ComponentType.BUTTON -> textButton(
+            IMAGE -> image(Json.decodeFromJsonElement(component.data!!),component.style)
+            BUTTON -> textButton(
                 component.id,
                 Json.decodeFromJsonElement(component.data!!),
                 component.action!!
             )
-            ComponentType.DIVIDER -> divider()
+            DIVIDER -> divider(component.style)
         }
     }
 
@@ -319,7 +322,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun lazyColumn(children: List<Component>) = LazyColumn(Modifier.padding(16.dp)) {
+    fun lazyColumn(children: List<Component>,style: CStyle?) = LazyColumn(Modifier.applyStyle(style)) {
         for (child in children) {
             item {
                 ResolveComponent(child)
@@ -364,7 +367,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun row(children: List<Component>) = Row(Modifier.padding(16.dp)) {
+    fun row(children: List<Component>,style: CStyle?) = Row(Modifier.applyStyle(style)) {
         for (child in children) {
             ResolveComponent(child)
         }
@@ -372,7 +375,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun lazyRow(children: List<Component>) = LazyRow(Modifier.padding(16.dp)) {
+    fun lazyRow(children: List<Component>,style: CStyle?) = LazyRow(Modifier.applyStyle(style)) {
         for (child in children) {
             item {
                 ResolveComponent(child)
@@ -382,7 +385,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun box(children: List<Component>) = Box {
+    fun box(children: List<Component>,style: CStyle?) = Box(Modifier.applyStyle(style)) {
         for (child in children) {
             ResolveComponent(child)
         }
@@ -390,7 +393,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun divider() = Divider(Modifier.fillMaxWidth())
+    fun divider(style: CStyle?) = Divider(Modifier.applyStyle(style))
 
 
 }

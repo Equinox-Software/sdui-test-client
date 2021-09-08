@@ -2,6 +2,8 @@ package nyx.sdui.components.base
 
 enum class ComponentType {
     SCROLL_VERTICAL,
+    SCROLL_HORIZONTAL,
+    HORIZONTAL,
     BOX,
     VERTICAL,
     SELECTABLE_LIST,

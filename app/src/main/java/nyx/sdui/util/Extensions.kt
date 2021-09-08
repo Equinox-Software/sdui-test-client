@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import nyx.sdui.components.base.CStyle
 
+// is this even needed??
 fun List<Int>.paddingValues() = when (size) {
     1 -> PaddingValues(
         get(1).dp,
@@ -29,11 +30,9 @@ fun List<Int>.paddingValues() = when (size) {
 
 //add more here
 fun Modifier.applyStyle(style:CStyle?) = style?.let{ s ->
-    apply {
-        s.padding?.paddingValues()?.let { padding(it) }
-        s.width?.let { if(it==-1) fillMaxWidth() else width(it.dp) }
-        s.height?.let { if(it==-1) fillMaxHeight() else height(it.dp) }
-    }
+        s.padding?.paddingValues()?.let { then(Modifier.padding(it)) }
+        s.width?.let { if(it==-1) fillMaxWidth() else then(width(it.dp)) }
+        s.height?.let { if(it==-1) fillMaxHeight() else then(height(it.dp)) }
 }?:Modifier
 
 
