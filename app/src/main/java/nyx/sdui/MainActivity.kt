@@ -34,6 +34,8 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.components.base.*
 import nyx.sdui.ui.theme.SduiTheme
+import nyx.sdui.util.applyStyle
+import nyx.sdui.util.paddingValues
 
 class MainActivity : ComponentActivity() {
 
@@ -198,7 +200,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         when (component.type) {
             //layouts
             ComponentType.BOX -> box(component.children!!)
-            ComponentType.VERTICAL -> column(component.children!!)
+            ComponentType.VERTICAL -> column(component.children!!,component.style)
             ComponentType.SCROLL_VERTICAL -> lazyColumn(component.children!!)
             //     SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
             //   SELECTABLE_ROW -> selectableRow(component.data!! as Map<String,String>)
@@ -206,13 +208,13 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             //widgets
             ComponentType.EDIT_TEXT -> textField(
                 component.id,
-                Json.decodeFromJsonElement(component.data!!)
+                Json.decodeFromJsonElement(component.data!!),component.style
             )
             ComponentType.TEXT -> text(
                 Json.decodeFromJsonElement(component.data!!),
                 component.style
             )
-            ComponentType.IMAGE -> image(Json.decodeFromJsonElement(component.data!!))
+            ComponentType.IMAGE -> image(Json.decodeFromJsonElement(component.data!!),component.style)
             ComponentType.BUTTON -> textButton(
                 component.id,
                 Json.decodeFromJsonElement(component.data!!),
@@ -240,20 +242,13 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun text(text: String, styles: CStyle) {
+    fun text(text: String, style: CStyle) {
         ////// better than list? >>>  PaddingValues(0.dp)
 
         Text(
             text,
-            Modifier.padding(
-                PaddingValues(
-                    styles.padding[0].dp,
-                    styles.padding[1].dp,
-                    styles.padding[2].dp,
-                    styles.padding[3].dp
-                )
-            ),
-            color = Color(styles.color)
+            Modifier.applyStyle(style),
+            color = Color(style.color)
         )
 
 
@@ -261,14 +256,17 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textField(id: String, defaultValue: String = "") {
+    fun textField(id: String, defaultValue: String = "",style: CStyle?) {
         var text by remember { mutableStateOf(defaultValue) }
         TextField(
             value = text,
+
             onValueChange = {
                 //  viewModel.data.value?.set(id, Json.encodeToJsonElement(it.text))
                 text = it
-            }, label = {
+            },
+            Modifier.applyStyle(style),
+            label = {
                 Text("what you enter here should appear on the next page (not yet)")
             })
     }
@@ -276,7 +274,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     @OptIn(ExperimentalCoilApi::class)
     @SuppressLint("ComposableNaming")
     @Composable
-    fun image(url: String) = Image(painter = rememberImagePainter(
+    fun image(url: String,style: CStyle?) = Image(painter = rememberImagePainter(
         data = url,
         imageLoader = LocalImageLoader.current, builder = {
             crossfade(true)
@@ -284,9 +282,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             transformations(CircleCropTransformation())
         }
     ), contentDescription = null,
-        Modifier
-            .fillMaxWidth()
-            .height(100.dp))
+        Modifier.applyStyle(style))
 
     @SuppressLint("ComposableNaming")
     @Composable
@@ -315,7 +311,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun column(children: List<Component>) = Column(Modifier.padding(16.dp)) {
+    fun column(children: List<Component>,style: CStyle?) = Column(Modifier.applyStyle(style)) {
         for (child in children) {
             ResolveComponent(child)
         }
