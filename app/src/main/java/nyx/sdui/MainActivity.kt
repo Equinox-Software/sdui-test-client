@@ -8,7 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.Button
@@ -16,9 +19,9 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,10 +36,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import nyx.felix.screens.ErrorScreen
 import nyx.sdui.components.base.*
+import nyx.sdui.components.base.ComponentType.*
+import nyx.sdui.model.RouteTokenResponse
+import nyx.sdui.model.UserLogin
 import nyx.sdui.ui.theme.SduiTheme
 import nyx.sdui.util.applyStyle
-import nyx.sdui.components.base.ComponentType.*
-import nyx.sdui.util.paddingValues
+
 
 class MainActivity : ComponentActivity() {
 
@@ -52,125 +57,124 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SduiTheme {
-                /*  when (val result = viewModel.result.collectAsState().value) {
-                      is Status.Loading -> {
-                          Log.w(TAG, "Loading")
-                          LoadingScreen()
-                      }
 
-                      is Status.Success -> {
-                          Log.w(TAG, "Success")
-                         Content(result.data as Component)
-                      }
+                val user = viewModel.getUserLogin(this@MainActivity)
 
-                      is Status.Failure -> {
-                          val e = result.exception as Exception
-
-                          Log.e(
-                              TAG,
-                              "Loading $TAG failed: ${e.message}\n\n--- Stacktrace: ${
-                                  Log.getStackTraceString(e)
-                              }"
-                          )
-
-                          val msg = e.message!!
-
-                          ErrorScreen("Loading $TAG failed.", msg)
-                      }
-                  }
+                if (user != null) {
+                    Login(user)
+                } else {
+                    SignIn()
+                }
+            }
+        }
+    }
 
 
-                 */
+    @OptIn(DelicateCoroutinesApi::class)
+    @Composable
+    fun Login(user: UserLogin) {
 
-                LoadableView {
-                    val result by loadAsync {
-                        viewModel.fetchRoutes()
+        LoadableView {
+            val result by loadAsync {
+                viewModel.logIn(user)
+            }
+
+            whenReady {
+                SetRoutes(result)
+            }
+
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    @Composable
+    fun SignIn() {
+        Log.e(TAG, "-- user exists not!")
+        var signingIn by remember { mutableStateOf(false) }
+        var username by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+
+        if (signingIn) {
+            LoadableView {
+                val result by loadAsync {
+                    viewModel.signUp(UserLogin(username, password))
+                }
+
+                whenReady {
+                    SetRoutes(result)
+                }
+
+            }
+        } else {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column {
+
+
+                    Text("Sign In\n(misses encryption right now.. will obviously do that)")
+
+
+                    TextField(
+                        value = username,
+                        onValueChange = {
+                            username = it
+                        },
+                        label = {
+                            Text("username")
+                        })
+
+                    TextField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                        },
+                        label = {
+                            Text("password")
+                        })
+
+
+                    Button(onClick = {
+
+                        signingIn = true
+
+                    }) {
+                        Text("Sign in!")
                     }
 
-                    whenReady {
-                        when (result) {
-                            is Exception -> ErrorScreen(
-                                errorTitle = "Loading Routes failed.",
-                                errorMessage = (result as Exception).message!!
-                            )
-                            is List<*> -> {
-                                val routes = result as List<String>
-                                Log.d(TAG, "Loaded routes: $routes")
+                }
+            }
 
-                                navController = rememberNavController()
+        }
+    }
 
-                                Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
-                                NavHost(navController, startDestination = "b") {
-                                    routes.forEach { route ->
-                                        composable(route = route) {
-                                            Screen(route = route)
-                                        }
-                                    }
-                                }
+    @Composable
+    fun SignUp() {
 
-                            }
+    }
+
+    @Composable
+    fun SetRoutes(result: Any) {
+        when (result) {
+            is Exception -> ErrorScreen(
+                errorTitle = "SignIn failed.",
+                errorMessage = result.message!!
+            )
+            is RouteTokenResponse -> {
+
+                Log.d(TAG, "Loading routes: ${result.routes}")
+
+                viewModel.saveToken(result.token)
+
+                navController = rememberNavController()
+
+                Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
+                NavHost(navController, startDestination = "b") {
+                    result.routes.forEach { route ->
+                        composable(route = route) {
+                            Screen(route = route)
                         }
                     }
                 }
 
-                /*    routes?.let {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable {
-
-
-                                    navController.navigate("c")
-
-                                }
-                                .padding(10.dp)) {
-                            Text("Stable >>>")
-                        }
-                    }
-                 */
-
-                /*
-                Will be useful for login
-Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(Modifier.padding(16.dp)) {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable {
-
-                            scope.launch {
-
-                                val token = client.post<Map<String, String>>("/login") {
-                                    contentType(ContentType.Application.Json)
-                                    body = User("fhuuu", "1234")
-                                }["token"]
-
-                                Log.d(TAG, "-------------afef\n\n TOKEN::: $token")
-
-                                textt += "\n\nPOSTED >> TOKEN: $token"
-
-
-                                val ss = client.get<String>("/hello") {
-                                    header(HttpHeaders.Authorization, "Bearer $token")
-                                }
-
-                                Log.d(TAG, "_----------------\n\nSTRING $ss")
-
-                                textt += "\n\nAUTHORIZED >> RESPONSE: $ss"
-
-
-                            }
-
-                        }
-                        .padding(10.dp)) {
-                    Text("Stable -- POST")
-
-                }
-
-                Text(textt)}}
-*/
             }
         }
     }
@@ -200,24 +204,24 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         //TODO What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
         when (component.type) {
             //layouts
-            BOX -> box(component.children!!,component.style)
-            VERTICAL -> column(component.children!!,component.style)
-            SCROLL_VERTICAL -> lazyColumn(component.children!!,component.style)
-            HORIZONTAL -> row(component.children!!,component.style)
-            SCROLL_HORIZONTAL -> lazyRow(component.children!!,component.style)
+            BOX -> box(component.children!!, component.style)
+            VERTICAL -> column(component.children!!, component.style)
+            SCROLL_VERTICAL -> lazyColumn(component.children!!, component.style)
+            HORIZONTAL -> row(component.children!!, component.style)
+            SCROLL_HORIZONTAL -> lazyRow(component.children!!, component.style)
             //     SELECTABLE_LIST -> selectableLazyColumn(component.children!!)
             //   SELECTABLE_ROW -> selectableRow(component.data!! as Map<String,String>)
 
             //widgets
             EDIT_TEXT -> textField(
                 component.id,
-                Json.decodeFromJsonElement(component.data!!),component.style
+                Json.decodeFromJsonElement(component.data!!), component.style
             )
             TEXT -> text(
                 Json.decodeFromJsonElement(component.data!!),
                 component.style
             )
-            IMAGE -> image(Json.decodeFromJsonElement(component.data!!),component.style)
+            IMAGE -> image(Json.decodeFromJsonElement(component.data!!), component.style)
             BUTTON -> textButton(
                 component.id,
                 Json.decodeFromJsonElement(component.data!!),
@@ -259,7 +263,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun textField(id: String, defaultValue: String = "",style: CStyle?) {
+    fun textField(id: String, defaultValue: String = "", style: CStyle?) {
         var text by remember { mutableStateOf(defaultValue) }
         TextField(
             value = text,
@@ -277,7 +281,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     @OptIn(ExperimentalCoilApi::class)
     @SuppressLint("ComposableNaming")
     @Composable
-    fun image(url: String,style: CStyle?) = Image(painter = rememberImagePainter(
+    fun image(url: String, style: CStyle?) = Image(painter = rememberImagePainter(
         data = url,
         imageLoader = LocalImageLoader.current, builder = {
             crossfade(true)
@@ -314,7 +318,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun column(children: List<Component>,style: CStyle?) = Column(Modifier.applyStyle(style)) {
+    fun column(children: List<Component>, style: CStyle?) = Column(Modifier.applyStyle(style)) {
         for (child in children) {
             ResolveComponent(child)
         }
@@ -322,13 +326,14 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun lazyColumn(children: List<Component>,style: CStyle?) = LazyColumn(Modifier.applyStyle(style)) {
-        for (child in children) {
-            item {
-                ResolveComponent(child)
+    fun lazyColumn(children: List<Component>, style: CStyle?) =
+        LazyColumn(Modifier.applyStyle(style)) {
+            for (child in children) {
+                item {
+                    ResolveComponent(child)
+                }
             }
         }
-    }
 
 /*    @SuppressLint("ComposableNaming")
     @Composable
@@ -367,7 +372,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun row(children: List<Component>,style: CStyle?) = Row(Modifier.applyStyle(style)) {
+    fun row(children: List<Component>, style: CStyle?) = Row(Modifier.applyStyle(style)) {
         for (child in children) {
             ResolveComponent(child)
         }
@@ -375,7 +380,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun lazyRow(children: List<Component>,style: CStyle?) = LazyRow(Modifier.applyStyle(style)) {
+    fun lazyRow(children: List<Component>, style: CStyle?) = LazyRow(Modifier.applyStyle(style)) {
         for (child in children) {
             item {
                 ResolveComponent(child)
@@ -385,7 +390,7 @@ Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun box(children: List<Component>,style: CStyle?) = Box(Modifier.applyStyle(style)) {
+    fun box(children: List<Component>, style: CStyle?) = Box(Modifier.applyStyle(style)) {
         for (child in children) {
             ResolveComponent(child)
         }

@@ -29,11 +29,11 @@ fun List<Int>.paddingValues() = when (size) {
 }
 
 //add more here
-fun Modifier.applyStyle(style:CStyle?) = style?.let{ s ->
-        s.padding?.paddingValues()?.let { then(Modifier.padding(it)) }
-        s.width?.let { if(it==-1) fillMaxWidth() else then(width(it.dp)) }
-        s.height?.let { if(it==-1) fillMaxHeight() else then(height(it.dp)) }
-}?:Modifier
+fun Modifier.applyStyle(style: CStyle?) = style?.let { s ->
+    s.padding?.paddingValues()?.let { then(Modifier.padding(it)) }
+    s.width?.let { if (it == -1) fillMaxWidth() else then(width(it.dp)) }
+    s.height?.let { if (it == -1) fillMaxHeight() else then(height(it.dp)) }
+} ?: Modifier
 
 
 

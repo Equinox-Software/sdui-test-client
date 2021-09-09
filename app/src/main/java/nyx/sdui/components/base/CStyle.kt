@@ -1,7 +1,6 @@
 package nyx.sdui.components.base
 
 import kotlinx.serialization.Serializable
-import java.util.*
 
 @Serializable
 data class CStyle(
