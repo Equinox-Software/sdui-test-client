@@ -1,4 +1,4 @@
-package nyx.felix.screens
+package nyx.sdui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
