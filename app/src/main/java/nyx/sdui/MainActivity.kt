@@ -34,7 +34,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
-import nyx.felix.screens.ErrorScreen
+import nyx.sdui.screens.ErrorScreen
 import nyx.sdui.components.base.*
 import nyx.sdui.components.base.ComponentType.*
 import nyx.sdui.model.RouteTokenResponse
@@ -249,16 +249,13 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("ComposableNaming")
     @Composable
-    fun text(text: String, style: CStyle) {
+    fun text(text: String, style: CStyle?) {
         ////// better than list? >>>  PaddingValues(0.dp)
 
         Text(
             text,
             Modifier.applyStyle(style),
-            color = Color(style.color)
-        )
-
-
+            style?.let{ Color(it.color)}?:Color.Unspecified)
     }
 
     @SuppressLint("ComposableNaming")
