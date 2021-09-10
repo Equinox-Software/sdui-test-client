@@ -8,10 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.Button
@@ -22,6 +19,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,15 +30,20 @@ import coil.compose.LocalImageLoader
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
-import nyx.sdui.screens.ErrorScreen
+import kotlinx.serialization.json.encodeToJsonElement
 import nyx.sdui.components.base.*
 import nyx.sdui.components.base.ComponentType.*
+import nyx.sdui.model.BackendError
 import nyx.sdui.model.RouteTokenResponse
 import nyx.sdui.model.UserLogin
+import nyx.sdui.screens.ErrorScreen
 import nyx.sdui.ui.theme.SduiTheme
+import nyx.sdui.util.WRONG_MAIL
+import nyx.sdui.util.WRONG_PASSWORD
 import nyx.sdui.util.applyStyle
 
 
@@ -80,7 +84,26 @@ class MainActivity : ComponentActivity() {
             }
 
             whenReady {
-                SetRoutes(result)
+                when (result) {
+                    is Exception -> ErrorScreen(
+                        errorTitle = "LogIn failed.",
+                        errorMessage = (result as Exception).message!!
+                    )
+                    is BackendError -> {
+
+                        val errorCode = result as BackendError
+
+                        SignIn(
+                            usernameDefault = user.username,
+                            passwordDefault = user.password,
+                            usernameWrongDefault = errorCode.errorCode == WRONG_MAIL,
+                            passwordWrongDefault = errorCode.errorCode == WRONG_PASSWORD
+                        )
+
+                    }
+
+                    is RouteTokenResponse -> SetRoutes(result as RouteTokenResponse)
+                }
             }
 
         }
@@ -88,11 +111,19 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(DelicateCoroutinesApi::class)
     @Composable
-    fun SignIn() {
+    fun SignIn(
+        usernameDefault: String = "",
+        passwordDefault: String = "",
+        usernameWrongDefault: Boolean = false,
+        passwordWrongDefault: Boolean = false
+    ) {
         Log.e(TAG, "-- user exists not!")
         var signingIn by remember { mutableStateOf(false) }
-        var username by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
+        var username by remember { mutableStateOf(usernameDefault) }
+        var password by remember { mutableStateOf(passwordDefault) }
+
+        var isUsernameWrong by remember { mutableStateOf(usernameWrongDefault) }
+        var isPasswordWrong by remember { mutableStateOf(passwordWrongDefault) }
 
         if (signingIn) {
             LoadableView {
@@ -101,23 +132,58 @@ class MainActivity : ComponentActivity() {
                 }
 
                 whenReady {
-                    SetRoutes(result)
+                    Log.e(TAG, "RESULT::: $result")
+
+                    when (result) {
+
+
+                        is Exception -> ErrorScreen(
+                            errorTitle = "SignIn failed.",
+                            errorMessage = (result as Exception).message!!
+                        )
+                        is BackendError -> {
+                            val errorCode = result as BackendError
+
+                            Log.e(TAG, "errorCode::: $errorCode")
+
+                            if (errorCode.errorCode == WRONG_MAIL) {
+                                isUsernameWrong = true
+                            } else if (errorCode.errorCode == WRONG_PASSWORD) {
+                                isPasswordWrong = true
+                            }
+
+                            Log.e(
+                                TAG,
+                                "MAIL::: ${errorCode.errorCode == WRONG_MAIL} -- $isUsernameWrong >> PASS::: ${errorCode.errorCode == WRONG_PASSWORD} --- $isPasswordWrong"
+                            )
+
+                            signingIn = false
+                        }
+
+                        is RouteTokenResponse -> SetRoutes(result as RouteTokenResponse)
+                    }
                 }
 
             }
         } else {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column {
+                Column(
+                    Modifier.padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
+                    Text("Sign In", fontSize = 18.sp)
 
-                    Text("Sign In\n(misses encryption right now.. will obviously do that)")
-
+                    Text("- username: abc\n- password: 123")
 
                     TextField(
                         value = username,
                         onValueChange = {
                             username = it
+                            isUsernameWrong = false
                         },
+                        modifier = Modifier.padding(top = 16.dp),
+                        isError = isUsernameWrong,
                         label = {
                             Text("username")
                         })
@@ -126,17 +192,25 @@ class MainActivity : ComponentActivity() {
                         value = password,
                         onValueChange = {
                             password = it
+                            isPasswordWrong = false
                         },
+                        modifier = Modifier.padding(top = 16.dp),
+                        isError = isPasswordWrong,
                         label = {
                             Text("password")
                         })
 
-
-                    Button(onClick = {
-
-                        signingIn = true
-
-                    }) {
+                    Button(
+                        onClick = {
+                            isUsernameWrong = false
+                            isPasswordWrong = false
+                            signingIn = true
+                        },
+                        modifier = Modifier
+                            .padding(top = 16.dp)
+                            .fillMaxWidth(),
+                        enabled = username.isNotEmpty() && password.isNotEmpty()
+                    ) {
                         Text("Sign in!")
                     }
 
@@ -148,33 +222,23 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun SignUp() {
-
+        Text("---- Sign up!")
     }
 
     @Composable
-    fun SetRoutes(result: Any) {
-        when (result) {
-            is Exception -> ErrorScreen(
-                errorTitle = "SignIn failed.",
-                errorMessage = result.message!!
-            )
-            is RouteTokenResponse -> {
+    fun SetRoutes(result: RouteTokenResponse) {
+        Log.d(TAG, "Loading routes: ${result.routes}")
 
-                Log.d(TAG, "Loading routes: ${result.routes}")
+        viewModel.saveToken(result.token)
 
-                viewModel.saveToken(result.token)
+        navController = rememberNavController()
 
-                navController = rememberNavController()
-
-                Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
-                NavHost(navController, startDestination = "b") {
-                    result.routes.forEach { route ->
-                        composable(route = route) {
-                            Screen(route = route)
-                        }
-                    }
+        Log.e("EEEEEEEE", "---\n\n\nNAV CONTROLLER\n\n----")
+        NavHost(navController, startDestination = "b") {
+            result.routes.forEach { route ->
+                composable(route = route) {
+                    Screen(route = route)
                 }
-
             }
         }
     }
@@ -192,7 +256,10 @@ class MainActivity : ComponentActivity() {
                     errorTitle = "Loading Page $route failed.",
                     errorMessage = (result as Exception).message!!
                 )
-                is Component -> ResolveComponent(result as Component)
+                is Component -> {
+                    //TODO clear pageData before that :)
+                    ResolveComponent(result as Component)
+                }
             }
         }
     }
@@ -200,6 +267,10 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalCoilApi::class)
     @Composable
     fun ResolveComponent(component: Component) {
+
+        component.data?.let {
+            viewModel.pageData[component.id] = it
+        }
 
         //TODO What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
         when (component.type) {
@@ -255,9 +326,11 @@ class MainActivity : ComponentActivity() {
         Text(
             text,
             Modifier.applyStyle(style),
-            style?.let{ Color(it.color)}?:Color.Unspecified)
+            style?.let { Color(it.color) } ?: Color.Unspecified
+        )
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     @SuppressLint("ComposableNaming")
     @Composable
     fun textField(id: String, defaultValue: String = "", style: CStyle?) {
@@ -266,7 +339,8 @@ class MainActivity : ComponentActivity() {
             value = text,
 
             onValueChange = {
-                //  viewModel.data.value?.set(id, Json.encodeToJsonElement(it.text))
+                viewModel.pageData[id] = it
+                Log.e(TAG, "-- apllying DATA")
                 text = it
             },
             Modifier.applyStyle(style),
@@ -325,6 +399,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun lazyColumn(children: List<Component>, style: CStyle?) =
         LazyColumn(Modifier.applyStyle(style)) {
+            Log.e("STYLE", ">>>>>>>>>>>>> $style")
             for (child in children) {
                 item {
                     ResolveComponent(child)
