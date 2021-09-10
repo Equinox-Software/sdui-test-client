@@ -18,6 +18,7 @@ val client = HttpClient(CIO) {
         url {
             protocol = URLProtocol.HTTPS
         }
+        contentType(ContentType.Application.Json)
     }
 
     install(JsonFeature) {
@@ -49,3 +50,13 @@ val client = HttpClient(CIO) {
     }
 }
 
+suspend fun <T> HttpClient.requestAndCatch(
+    block: suspend HttpClient.() -> T,
+    errorHandler: suspend ResponseException.() -> T
+): T = runCatching { block() }
+    .getOrElse {
+        when (it) {
+            is ResponseException -> it.errorHandler()
+            else -> throw it
+        }
+    }

@@ -6,12 +6,16 @@ import android.util.Log
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import nyx.sdui.components.base.Component
+import nyx.sdui.model.BackendError
 import nyx.sdui.model.RouteTokenResponse
 import nyx.sdui.model.UserLogin
 
@@ -43,19 +47,41 @@ object Repository {
         }
     }
 
-    suspend fun logIn(user: UserLogin): RouteTokenResponse {
-        saveUserCredentials(user)
-
-        return client.post("/auth/login") {
+    suspend fun logIn(user: UserLogin): Any {
+        val response: HttpResponse = client.post("/auth/login") {
             header(HttpHeaders.ContentType, ContentType.Application.Json)
             body = user
+        }
+
+        return try {
+            response.receive<RouteTokenResponse>()
+        } catch (e: Exception) {
+            try {
+                response.receive<BackendError>()
+            } catch (e: Exception) {
+                e
+            }
         }
     }
 
     //TODO cahnge url to actually create a user
-    suspend fun signUp(user: UserLogin): RouteTokenResponse = client.post("/auth/login") {
-        header(HttpHeaders.ContentType, ContentType.Application.Json)
-        body = user
+    suspend fun signUp(user: UserLogin): Any {
+        saveUserCredentials(user)
+
+        //TODO encrypt password and mail!!!
+        val response: HttpResponse = client.post("/auth/login") {
+            body = user
+        }
+
+        return try {
+            response.receive<RouteTokenResponse>()
+        } catch (e: Exception) {
+            try {
+                response.receive<BackendError>()
+            } catch (e: Exception) {
+                e
+            }
+        }
     }
 
     fun saveToken(token: String) {
@@ -64,14 +90,24 @@ object Repository {
 
     fun getToken() = prefs.getString("userLogin_TOKEN", null)
 
-    fun saveUserCredentials(user: UserLogin) {
+    private fun saveUserCredentials(user: UserLogin) {
         prefs.edit {
             putString("userLogin_MAIL", user.username)
             putString("userLogin_PASSWORD", user.password)
         }
     }
 
-    suspend fun getContent(route: String): Component = client.get("content/$route")
+    suspend fun getContent(route: String, data: Map<String, Any>): Component =
+        client.get("content/$route") {
+
+            data.entries.forEach {
+                Log.e(TAG, ">> pageData :::::::::: ${it.key} --- ${it.value}")
+            }
+
+            data.values.map { value -> serializeAny(value) }
+
+            body = data
+        }
 
 
     //make this appear
@@ -87,7 +123,7 @@ object Repository {
                     is Int -> Json.encodeToJsonElement(value)
                     is Boolean -> Json.encodeToJsonElement(value)
                     is Long -> Json.encodeToJsonElement(value)
-                    is List<*> -> Json.encodeToJsonElement(value) //might fail
+                    is List<*> -> Json.encodeToJsonElement(value) //might fail -- why not for each and then serialize entries?
 
                     else -> throw SerializationException("Unsupported Type! Can't serialize $value.")
                 }
@@ -107,3 +143,25 @@ object Repository {
 
         }
 }
+
+fun serializeAny(value:Any): JsonElement? =
+     when (value) {
+        is String -> Json.encodeToJsonElement(value)
+        is Int -> Json.encodeToJsonElement(value)
+        is Boolean -> Json.encodeToJsonElement(value)
+        is Long -> Json.encodeToJsonElement(value)
+       /* is List<*> -> (value as List<Any>).forEach { entry ->
+            entry?.let {
+                serializeAny(it!!)
+            }
+
+            return value as List
+        }
+
+        */
+        else -> null
+
+        //might fail -- why not for each and then serialize entries?
+
+       //throw SerializationException("Unsupported Type! Can't serialize $value.")
+    }
