@@ -33,7 +33,7 @@ class MainViewModel : ViewModel() {
 
     fun saveToken(token: String) = Repository.saveToken(token)
 
-    suspend fun fetchContent(route: String) = try {
+    suspend fun fetchContent(route: String, data:Map<String,Any>) = try {
         Log.e(TAG, "-- data:::: ${pageData.toMap()}")
         Repository.getContent(route, pageData)
      ////   pageData.clear() should be done somewhere^^

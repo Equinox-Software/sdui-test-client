@@ -16,6 +16,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -247,7 +248,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Screen(route: String) = LoadableView {
         val result by loadAsync {
-            viewModel.fetchContent(route)
+            viewModel.fetchContent(route, viewModel.pageData)
         }
 
         whenReady {
@@ -257,7 +258,7 @@ class MainActivity : ComponentActivity() {
                     errorMessage = (result as Exception).message!!
                 )
                 is Component -> {
-                    //TODO clear pageData before that :)
+                    //TODO clear pageData before that -- or better not :(
                     ResolveComponent(result as Component)
                 }
             }
@@ -267,10 +268,6 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalCoilApi::class)
     @Composable
     fun ResolveComponent(component: Component) {
-
-        component.data?.let {
-            viewModel.pageData[component.id] = it
-        }
 
         //TODO What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
         when (component.type) {
@@ -340,7 +337,7 @@ class MainActivity : ComponentActivity() {
 
             onValueChange = {
                 viewModel.pageData[id] = it
-                Log.e(TAG, "-- apllying DATA")
+                Log.e(TAG, "-- apllying DATA -- IT: $it -- ${viewModel.pageData.toMap()}")
                 text = it
             },
             Modifier.applyStyle(style),
