@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CAction(
-    var click: String? = null,
-    var navigate: String? = null,
-    var select: String? = null
+    val click: String? = null,
+    val navigate: String? = null,
+    val select: String? = null,
+val keys : List<String>?=null
 )

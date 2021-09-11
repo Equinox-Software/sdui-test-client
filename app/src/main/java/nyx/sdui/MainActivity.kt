@@ -16,7 +16,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +34,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.encodeToJsonElement
 import nyx.sdui.components.base.*
 import nyx.sdui.components.base.ComponentType.*
 import nyx.sdui.model.BackendError
@@ -248,8 +246,11 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Screen(route: String) = LoadableView {
         val result by loadAsync {
-            viewModel.fetchContent(route, viewModel.pageData)
+            viewModel.fetchContent(route)
         }
+
+        if(route=="e")
+            Log.e("+++++++++++","///// ///// e")
 
         whenReady {
             when (result) {
@@ -373,6 +374,7 @@ class MainActivity : ComponentActivity() {
         }
 
         action.navigate?.let {
+            viewModel.keys=action.keys
             navController.navigate(it)
         }
 

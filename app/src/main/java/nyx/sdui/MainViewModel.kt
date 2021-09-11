@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
-import kotlinx.serialization.json.JsonElement
 import nyx.sdui.model.UserLogin
 import nyx.sdui.network.Repository
 
@@ -13,7 +12,8 @@ class MainViewModel : ViewModel() {
     private val TAG = "MainViewModel"
 
     //might any be better in terms of performance?
-    var pageData = mutableStateMapOf<String,Any>()
+    var pageData = mutableStateMapOf<String, Any>()
+    var keys: List<String>? = null
 
     fun getUserLogin(context: Context) = Repository.getUserLogin(context)
 
@@ -33,10 +33,17 @@ class MainViewModel : ViewModel() {
 
     fun saveToken(token: String) = Repository.saveToken(token)
 
-    suspend fun fetchContent(route: String, data:Map<String,Any>) = try {
+    suspend fun fetchContent(route: String) = try {
         Log.e(TAG, "-- data:::: ${pageData.toMap()}")
-        Repository.getContent(route, pageData)
-     ////   pageData.clear() should be done somewhere^^
+
+
+        keys?.let { keysData -> pageData.filterKeys { keysData.contains(it) } }
+
+        Log.e(TAG, "-- data:keys reduced::: ${keys?.let { keysData -> pageData.filterKeys { keysData.contains(it) } }} --- keys::: $keys")
+
+
+        Repository.getContent(route, keys?.let { keysData -> pageData.filterKeys { keysData.contains(it) } } ?: pageData)
+        ////   pageData.clear() should be done somewhere^^
     } catch (e: Exception) {
         Log.e(TAG, e.message!!)
         e
