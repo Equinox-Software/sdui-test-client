@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -19,6 +19,7 @@ import nyx.sdui.model.BackendError
 import nyx.sdui.model.RouteTokenResponse
 import nyx.sdui.model.UserLogin
 
+
 object Repository {
 
     val TAG = "REPO"
@@ -27,13 +28,20 @@ object Repository {
     fun getUserLogin(context: Context): UserLogin? {
 
         Log.e(TAG, "--- INIT ---")
-        prefs = EncryptedSharedPreferences.create(
-            "prefs",
-            MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
+
+
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        val prefs = EncryptedSharedPreferences.create(
             context,
+            "sdui-prefs",
+            masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+        );
+
 
         val mail = prefs.getString("userLogin_MAIL", null)
         val password = prefs.getString("userLogin_PASSWORD", null)
@@ -49,15 +57,15 @@ object Repository {
 
     suspend fun logIn(user: UserLogin): Any {
         val response: HttpResponse = client.post("/auth/login") {
-            header(HttpHeaders.ContentType, ContentType.Application.Json)
-            body = user
+            contentType(ContentType.Application.Json)
+            setBody(user)
         }
 
         return try {
-            response.receive<RouteTokenResponse>()
+            response.body<RouteTokenResponse>()
         } catch (e: Exception) {
             try {
-                response.receive<BackendError>()
+                response.body<BackendError>()
             } catch (e: Exception) {
                 e
             }
@@ -70,14 +78,15 @@ object Repository {
 
         //TODO encrypt password and mail!!!
         val response: HttpResponse = client.post("/auth/login") {
-            body = user
+            contentType(ContentType.Application.Json)
+            setBody(user)
         }
 
         return try {
-            response.receive<RouteTokenResponse>()
+            response.body<RouteTokenResponse>()
         } catch (e: Exception) {
             try {
-                response.receive<BackendError>()
+                response.body<BackendError>()
             } catch (e: Exception) {
                 e
             }
@@ -97,8 +106,8 @@ object Repository {
         }
     }
 
-    suspend fun getContent(route: String, data: Map<String, Any>): Component =
-        client.get("content/$route") {
+    suspend fun getContent(route: String, data: Map<String, Any>): Component {
+        val response: HttpResponse = client.get("content/$route") {
 
             data.entries.forEach {
                 Log.e(TAG, ">> pageData :::::::::: ${it.key} --- ${it.value}")
@@ -106,13 +115,20 @@ object Repository {
 
             data.values.map { value -> serializeAny(value) }
 
-            body = data
+            contentType(ContentType.Application.Json)
+            setBody(data)
+
         }
+
+        return response.body<Component>()
+
+
+    }
 
 
     //make this appear
-    suspend fun performClick(id: String, data: Map<String, Any>): Component =
-        client.post("click${id}") {
+    suspend fun performClick(id: String, data: Map<String, Any>): Component {
+        val response: HttpResponse = client.post("click${id}") {
             for (i in data.values) {
                 Log.e("REPO", i.toString())
             }
@@ -139,29 +155,32 @@ object Repository {
             Log.e("REPO", "DATA - ID -- ${data["abTuT"]}")
 
             contentType(ContentType.Application.Json)
-            body = data
+            setBody(data)
 
+        }
+
+        return response.body<Component>()
+    }
+
+    fun serializeAny(value: Any): JsonElement? =
+        when (value) {
+            is String -> Json.encodeToJsonElement(value)
+            is Int -> Json.encodeToJsonElement(value)
+            is Boolean -> Json.encodeToJsonElement(value)
+            is Long -> Json.encodeToJsonElement(value)
+            /* is List<*> -> (value as List<Any>).forEach { entry ->
+                 entry?.let {
+                     serializeAny(it!!)
+                 }
+
+                 return value as List
+             }
+
+             */
+            else -> null
+
+            //might fail -- why not for each and then serialize entries?
+
+            //throw SerializationException("Unsupported Type! Can't serialize $value.")
         }
 }
-
-fun serializeAny(value:Any): JsonElement? =
-     when (value) {
-        is String -> Json.encodeToJsonElement(value)
-        is Int -> Json.encodeToJsonElement(value)
-        is Boolean -> Json.encodeToJsonElement(value)
-        is Long -> Json.encodeToJsonElement(value)
-       /* is List<*> -> (value as List<Any>).forEach { entry ->
-            entry?.let {
-                serializeAny(it!!)
-            }
-
-            return value as List
-        }
-
-        */
-        else -> null
-
-        //might fail -- why not for each and then serialize entries?
-
-       //throw SerializationException("Unsupported Type! Can't serialize $value.")
-    }

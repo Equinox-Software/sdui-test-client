@@ -7,18 +7,15 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.material.Button
-import androidx.compose.material.Divider
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -26,9 +23,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.LocalImageLoader
-import coil.compose.rememberImagePainter
-import coil.transform.CircleCropTransformation
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -37,9 +33,11 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import nyx.sdui.components.base.*
 import nyx.sdui.components.base.ComponentType.*
 import nyx.sdui.model.BackendError
+import nyx.sdui.model.Result
 import nyx.sdui.model.RouteTokenResponse
 import nyx.sdui.model.UserLogin
 import nyx.sdui.screens.ErrorScreen
+import nyx.sdui.screens.LoadableView
 import nyx.sdui.ui.theme.SduiTheme
 import nyx.sdui.util.WRONG_MAIL
 import nyx.sdui.util.WRONG_PASSWORD
@@ -63,11 +61,12 @@ class MainActivity : ComponentActivity() {
 
                 val user = viewModel.getUserLogin(this@MainActivity)
 
-                if (user != null) {
+                if (user != null)
                     Login(user)
-                } else {
+                else
                     SignIn()
-                }
+
+
             }
         }
     }
@@ -249,18 +248,21 @@ class MainActivity : ComponentActivity() {
             viewModel.fetchContent(route)
         }
 
-        if(route=="e")
-            Log.e("+++++++++++","///// ///// e")
+        if (route == "e")
+            Log.e("+++++++++++", "///// ///// e")
 
         whenReady {
-            when (result) {
-                is Exception -> ErrorScreen(
-                    errorTitle = "Loading Page $route failed.",
-                    errorMessage = (result as Exception).message!!
-                )
-                is Component -> {
+            when (val r = result) {
+
+                is Result.Failure -> {
+                    ErrorScreen(
+                        errorTitle = "Loading Page $route failed.",
+                        errorMessage = r.e.message!!
+                    )
+                }
+                is Result.Success<Component> -> {
                     //TODO clear pageData before that -- or better not :(
-                    ResolveComponent(result as Component)
+                    ResolveComponent(r.value)
                 }
             }
         }
@@ -269,6 +271,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalCoilApi::class)
     @Composable
     fun ResolveComponent(component: Component) {
+
 
         //TODO What about having a mutableMap called Data or so where keys are the Components' IDs and Value Any??
         when (component.type) {
@@ -350,15 +353,22 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalCoilApi::class)
     @SuppressLint("ComposableNaming")
     @Composable
-    fun image(url: String, style: CStyle?) = Image(painter = rememberImagePainter(
-        data = url,
-        imageLoader = LocalImageLoader.current, builder = {
-            crossfade(true)
-            placeholder(R.mipmap.ic_launcher_round)
-            transformations(CircleCropTransformation())
-        }
-    ), contentDescription = null,
-        Modifier.applyStyle(style))
+    fun image(url: String, style: CStyle?) =
+
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(url)
+                .crossfade(true)
+                .build(),
+            loading = {
+                CircularProgressIndicator()
+            },
+            contentDescription = "some text",
+            //        contentScale = ContentScale.Crop,
+            modifier = Modifier.applyStyle(style)
+
+        )
+
 
     @SuppressLint("ComposableNaming")
     @Composable
@@ -374,7 +384,7 @@ class MainActivity : ComponentActivity() {
         }
 
         action.navigate?.let {
-            viewModel.keys=action.keys
+            viewModel.keys = action.keys
             navController.navigate(it)
         }
 

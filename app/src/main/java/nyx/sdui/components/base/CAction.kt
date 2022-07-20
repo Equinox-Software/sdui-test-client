@@ -7,5 +7,5 @@ data class CAction(
     val click: String? = null,
     val navigate: String? = null,
     val select: String? = null,
-val keys : List<String>?=null
+    val keys: List<String>? = null
 )

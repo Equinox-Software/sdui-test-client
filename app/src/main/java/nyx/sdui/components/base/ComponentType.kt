@@ -6,8 +6,9 @@ enum class ComponentType {
     HORIZONTAL,
     BOX,
     VERTICAL,
-    SELECTABLE_LIST,
-    SELECTABLE_ROW,
+
+    //   SELECTABLE_LIST,
+    //   SELECTABLE_ROW,
     TEXT,
     BUTTON,
     IMAGE,

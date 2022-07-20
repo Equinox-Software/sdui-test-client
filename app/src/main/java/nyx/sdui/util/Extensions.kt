@@ -34,16 +34,18 @@ fun Modifier.applyStyle(style: CStyle?) = style?.let { s ->
     Log.e("STYLE", ">>> $style")
 
     s.padding?.paddingValues()?.let { then(Modifier.padding(it)) }
-    s.width?.let { if (it == -1) {
-        Log.e("STYLE", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> -1")
+    s.width?.let {
+        if (it == -1) {
+            Log.e("STYLE", ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> -1")
 
-        this.apply {
-            fillMaxWidth()
-        }
-        //doesn't work for lazyColumn
+            this.apply {
+                fillMaxWidth()
+            }
+            //doesn't work for lazyColumn
 
 
-    } else then(width(it.dp)) }
+        } else then(width(it.dp))
+    }
     s.height?.let { if (it == -1) then(fillMaxHeight()) else then(height(it.dp)) }
 } ?: Modifier
 

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import nyx.sdui.ui.theme.Teal200
+import nyx.sdui.ui.theme.Pink40
 
 @Composable
 fun ErrorScreen(
@@ -34,7 +34,7 @@ fun ErrorScreen(
 
             Text(
                 errorTitle,
-                color = Teal200,
+                color = Pink40,
                 fontSize = 16.sp
             )
 

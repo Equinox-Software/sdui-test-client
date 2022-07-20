@@ -3,13 +3,14 @@ package nyx.sdui.network
 import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.logging.*
-import io.ktor.client.features.observer.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.client.plugins.observer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 
 val client = HttpClient(CIO) {
 
@@ -21,11 +22,10 @@ val client = HttpClient(CIO) {
         contentType(ContentType.Application.Json)
     }
 
-    install(JsonFeature) {
-        serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
+    install(ContentNegotiation) {
+        json(Json {
             prettyPrint = true
-            //   isLenient = true
-            ignoreUnknownKeys = true
+            isLenient = true
         })
     }
 

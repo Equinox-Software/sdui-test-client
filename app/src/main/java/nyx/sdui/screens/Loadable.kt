@@ -1,10 +1,9 @@
-package nyx.sdui
+package nyx.sdui.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import kotlinx.coroutines.*
-import nyx.sdui.screens.LoadingScreen
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.random.Random

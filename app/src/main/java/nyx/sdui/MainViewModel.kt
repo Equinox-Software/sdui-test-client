@@ -39,14 +39,28 @@ class MainViewModel : ViewModel() {
 
         keys?.let { keysData -> pageData.filterKeys { keysData.contains(it) } }
 
-        Log.e(TAG, "-- data:keys reduced::: ${keys?.let { keysData -> pageData.filterKeys { keysData.contains(it) } }} --- keys::: $keys")
+        Log.e(
+            TAG,
+            "-- data:keys reduced::: ${
+                keys?.let { keysData ->
+                    pageData.filterKeys {
+                        keysData.contains(it)
+                    }
+                }
+            } --- keys::: $keys"
+        )
+
+        Log.i(TAG, "trying to get content.........")
+
+        nyx.sdui.model.Result.Success(Repository.getContent(
+            route,
+            keys?.let { keysData -> pageData.filterKeys { keysData.contains(it) } } ?: pageData))
 
 
-        Repository.getContent(route, keys?.let { keysData -> pageData.filterKeys { keysData.contains(it) } } ?: pageData)
         ////   pageData.clear() should be done somewhere^^
     } catch (e: Exception) {
         Log.e(TAG, e.message!!)
-        e
+        nyx.sdui.model.Result.Failure(e)
     }
 
 
