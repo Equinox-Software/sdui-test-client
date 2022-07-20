@@ -34,7 +34,7 @@ object Repository {
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
 
-        val prefs = EncryptedSharedPreferences.create(
+        prefs = EncryptedSharedPreferences.create(
             context,
             "sdui-prefs",
             masterKey,
