@@ -107,7 +107,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
+    @OptIn(DelicateCoroutinesApi::class, ExperimentalMaterial3Api::class)
     @Composable
     fun SignIn(
         usernameDefault: String = "",
@@ -331,7 +331,7 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
+    @OptIn(ExperimentalSerializationApi::class, ExperimentalMaterial3Api::class)
     @SuppressLint("ComposableNaming")
     @Composable
     fun textField(id: String, defaultValue: String = "", style: CStyle?) {

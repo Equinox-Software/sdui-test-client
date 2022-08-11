@@ -36,7 +36,7 @@ object Repository {
 
         prefs = EncryptedSharedPreferences.create(
             context,
-            "sdui-prefs",
+            "prefs",
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
@@ -72,7 +72,7 @@ object Repository {
         }
     }
 
-    //TODO cahnge url to actually create a user
+    //TODO change url to actually create a user
     suspend fun signUp(user: UserLogin): Any {
         saveUserCredentials(user)
 
